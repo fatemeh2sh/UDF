@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>معماری هدف — Vertical Slice Clean + UDF MVVM</title>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-code-font@v1.1.2/dist/font-face.css" />
+
+<style>
+  :root {
+    --bg: #f7f8fb;
+    --panel: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --code-bg: #f3f4f6;
+    --code-text: #111827;
+    --table-head: #f3f4f6;
+    --table-row-alt: #fafafa;
+    --quote-bg: #fff7ed;
+    --quote-border: #f59e0b;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.08);
+  }
+  html.dark {
+    --bg: #0b1020;
+    --panel: #111827;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --border: #1f2937;
+    --accent: #60a5fa;
+    --accent-soft: #1e3a8a;
+    --code-bg: #0f172a;
+    --code-text: #e5e7eb;
+    --table-head: #1f2937;
+    --table-row-alt: #0f172a;
+    --quote-bg: #1f1a0a;
+    --quote-border: #f59e0b;
+    --success: #4ade80;
+    --danger: #f87171;
+    --shadow: 0 1px 3px rgba(0,0,0,.4);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Vazirmatn", "Vazir", "Tahoma", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.85;
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* TOC */
+  aside.toc {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  aside.toc h3 {
+    margin: 0 0 10px;
+    font-size: 1rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  aside.toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  aside.toc li {
+    margin: 0;
+    padding: 0;
+  }
+  aside.toc a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: .92rem;
+    border-right: 3px solid transparent;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  aside.toc a:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-right-color: var(--accent);
+  }
+
+  /* main */
+  main.content {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 40px;
+    box-shadow: var(--shadow);
+    min-width: 0;
+  }
+
+  /* hero */
+  .hero {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 14px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-lg);
+  }
+  html.dark .hero {
+    background: linear-gradient(135deg, #1e3a8a 0%, #5b21b6 100%);
+  }
+  .hero h1 {
+    margin: 0 0 8px;
+    font-size: 1.7rem;
+    line-height: 1.5;
+  }
+  .hero p {
+    margin: 0;
+    opacity: .9;
+    font-size: 1rem;
+  }
+  .hero .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .hero .meta .badge {
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: .82rem;
+  }
+
+  /* headings */
+  h1, h2, h3, h4 {
+    font-family: inherit;
+    line-height: 1.5;
+    margin: 1.6em 0 .6em;
+  }
+  h1 { font-size: 1.6rem; }
+  h2 {
+    font-size: 1.35rem;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+    color: var(--accent);
+  }
+  h3 { font-size: 1.12rem; }
+  h4 { font-size: 1rem; color: var(--muted); }
+
+  p { margin: .6em 0; }
+
+  ul, ol { padding-right: 1.5em; }
+  li { margin: .25em 0; }
+
+  /* blockquote */
+  blockquote {
+    background: var(--quote-bg);
+    border-right: 4px solid var(--quote-border);
+    margin: 1em 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
+  blockquote p:first-child { margin-top: 0; }
+  blockquote p:last-child { margin-bottom: 0; }
+
+  /* code */
+  code {
+    font-family: "Vazir Code", "Fira Code", Consolas, "Courier New", monospace;
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .9em;
+    direction: ltr;
+    unicode-bidi: bidi-override;
+    display: inline-block;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 14px 18px;
+    border-radius: 10px;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+    border: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    display: block;
+    white-space: pre;
+    font-size: .88rem;
+  }
+
+  /* table */
+  .table-wrap { overflow-x: auto; margin: 1em 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: right;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--table-head);
+    font-weight: 700;
+    color: var(--muted);
+    font-size: .92rem;
+  }
+  tr:nth-child(even) td { background: var(--table-row-alt); }
+  tr:last-child td { border-bottom: none; }
+  td code, th code { font-size: .85em; }
+
+  hr {
+    border: none;
+    border-top: 1px dashed var(--border);
+    margin: 32px 0;
+  }
+
+  a { color: var(--accent); }
+
+  /* mermaid */
+  .mermaid-wrap {
+    margin: 1em 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: center;
+  }
+  .mermaid {
+    direction: ltr;
+    text-align: center;
+  }
+
+  /* anchor target offset */
+  section[id] { scroll-margin-top: 24px; }
+
+  /* theme toggle */
+  .toolbar {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+  }
+  .toolbar button {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .9rem;
+    box-shadow: var(--shadow-lg);
+    transition: transform .15s;
+  }
+  .toolbar button:hover { transform: translateY(-2px); }
+
+  /* utilities */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: .82rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .danger { color: var(--danger); }
+  .success { color: var(--success); }
+
+  .check { color: var(--success); font-weight: 700; }
+  .cross { color: var(--danger); font-weight: 700; }
+
+  /* responsive */
+  @media (max-width: 960px) {
+    .layout { grid-template-columns: 1fr; padding: 16px; }
+    aside.toc { position: static; max-height: unset; }
+    main.content { padding: 22px 18px; }
+    .hero { padding: 20px 22px; }
+    .hero h1 { font-size: 1.3rem; }
+    h2 { font-size: 1.15rem; }
+  }
+
+  /* print */
+  @media print {
+    .toolbar, aside.toc { display: none; }
+    .layout { display: block; padding: 0; max-width: none; }
+    main.content { box-shadow: none; border: none; padding: 0; }
+    pre, .mermaid-wrap, table { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <aside class="toc">
+    <h3>فهرست مطالب</h3>
+    <ol>
+      <li><a href="#sec-1">۱. خلاصه‌ی اجرایی</a></li>
+      <li><a href="#sec-2">۲. نقشه‌ی ماژول‌ها</a></li>
+      <li><a href="#sec-3">۳. ساختار ماژول‌ها</a></li>
+      <li><a href="#sec-4">۴. لایه‌بندی داخلی هر Feature</a></li>
+      <li><a href="#sec-5">۵. State Management: UDF MVVM</a></li>
+      <li><a href="#sec-6">۶. Cross-cutting Concerns</a></li>
+      <li><a href="#sec-7">۷. مدیریت متمرکز خطای API — safeApiCall</a></li>
+      <li><a href="#sec-8">۸. Room — پایلوت feature:calls</a></li>
+      <li><a href="#sec-9">۹. Inter-feature Communication</a></li>
+      <li><a href="#sec-10">۱۰. Boundary &amp; Visibility Rules</a></li>
+      <li><a href="#sec-11">۱۱. DI Strategy (Hilt)</a></li>
+      <li><a href="#sec-12">۱۲. Performance Stack</a></li>
+      <li><a href="#sec-13">۱۳. Observability Stack</a></li>
+      <li><a href="#sec-14">۱۴. Security Stack</a></li>
+      <li><a href="#sec-15">۱۵. Feature Rollout</a></li>
+      <li><a href="#sec-16">۱۶. Build &amp; Tooling</a></li>
+      <li><a href="#sec-17">۱۷. Testing Strategy</a></li>
+      <li><a href="#sec-18">۱۸. Anti-patterns ممنوع</a></li>
+      <li><a href="#sec-19">۱۹. روشن کردن گم‌ها</a></li>
+      <li><a href="#sec-20">۲۰. Roadmap (نقشه‌ی اجرایی)</a></li>
+      <li><a href="#sec-21">۲۱. خلاصه‌ی یک‌خطی</a></li>
+    </ol>
+  </aside>
+
+  <main class="content">
+
+    <div class="hero">
+      <h1>معماری هدف: Vertical Slice Clean + UDF MVVM</h1>
+      <p>سند کامل معماری هدف — Vertical Slice Clean + UDF MVVM با Core Infrastructure مشترک، مرز <code style="color:#fff;background:rgba(0,0,0,.25)">internal</code>، قواعد Konsist، آماده برای رشد به میلیون کاربر.</p>
+      <div class="meta">
+        <span class="badge">Android</span>
+        <span class="badge">Kotlin</span>
+        <span class="badge">Compose</span>
+        <span class="badge">Hilt</span>
+        <span class="badge">Multi-module</span>
+        <span class="badge">Clean Arch</span>
+      </div>
+    </div>
+
+    <p><em>این سند صرفاً مستندسازی معماری هدف است؛ هیچ تغییری روی کد فعلی اعمال نمی‌شود.</em></p>
+
+    <hr />
+
+    <!-- §1 -->
+    <section id="sec-1">
+      <h2>۱. خلاصه‌ی اجرایی</h2>
+      <ul>
+        <li><strong>الگوی معماری:</strong> Vertical Slice Clean Architecture</li>
+        <li><strong>State Management:</strong> UDF MVVM (یک <code>UiState</code> immutable + <code>StateFlow</code> + <code>SharedFlow&lt;UiEffect&gt;</code>)</li>
+        <li><strong>Modularization:</strong> هر feature یک ماژول مستقل با Clean کامل داخلی</li>
+        <li><strong>Boundary:</strong> کلیدواژه‌ی <code>internal</code> + قواعد Konsist (کامپایل‌تایم گارد)</li>
+        <li><strong>Cross-cutting:</strong> زیرساخت‌های متقاطع (network/database/datastore/...) فقط در <code>:core:*</code></li>
+        <li><strong>Inter-feature Communication:</strong> فقط از طریق <code>FeatureEntry</code> در <code>:core:navigation</code></li>
+        <li><strong>API Error Handling:</strong> گلوگاه واحد <code>safeApiCall</code> در <code>:core:network</code> — هیچ Repository نباید مستقیماً Exception شبکه را مدیریت کند</li>
+        <li><strong>Testing (فاز ۱):</strong> فقط <strong>Konsist</strong> برای گارد معماری در CI؛ سایر لایه‌های تست در فازهای بعد</li>
+        <li><strong>Room (محدود):</strong> پایلوت کامل فقط در <code>:feature:calls</code> (تماس‌های اخیر) به‌عنوان <strong>الگوی مرجع</strong>. سایر featureها فعلاً Room ندارند و مستقیم از Api می‌خوانند؛ هر feature آینده که نیاز پیدا کند، از همین الگو کپی می‌کند</li>
+        <li><strong>هدف:</strong> مقیاس میلیون کاربر، استقلال تیمی، Build سریع، Crash-free ≥ ۹۹.۵٪</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §2 -->
+    <section id="sec-2">
+      <h2>۲. نقشه‌ی ماژول‌ها</h2>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+graph TD
+    app[":app"] --> coreNetwork[":core:network"]
+    app --> coreDatabase[":core:database"]
+    app --> coreDatastore[":core:datastore"]
+    app --> coreCommon[":core:common"]
+    app --> coreNavigation[":core:navigation"]
+    app --> coreUi[":core:ui"]
+    app --> coreDesign[":core:designsystem"]
+    app --> sharedKernel[":shared-kernel"]
+    app --> featureAuth[":feature:auth"]
+    app --> featureHome[":feature:home"]
+    app --> featureMyloads[":feature:myloads"]
+    app --> featureCreatecargo[":feature:createcargo"]
+    app --> featureCalls[":feature:calls"]
+    app --> featureWaybill[":feature:waybill"]
+    app --> featurePriceinquiry[":feature:priceinquiry"]
+    app --> featureAccount[":feature:account"]
+
+    featureAuth --> coreNetwork
+    featureAuth --> coreDatabase
+    featureAuth --> coreDatastore
+    featureAuth --> sharedKernel
+    featureAuth --> coreNavigation
+    featureAuth --> coreUi
+
+    featureMyloads --> coreNetwork
+    featureMyloads --> coreDatabase
+    featureMyloads --> sharedKernel
+    featureMyloads --> coreNavigation
+    featureMyloads --> coreUi
+
+    coreNetwork --> sharedKernel
+    coreDatabase --> sharedKernel
+</pre>
+      </div>
+      <blockquote>
+        <p>هر ماژول feature <strong>فقط</strong> به <code>:core:*</code> و <code>:shared-kernel</code> وصل می‌شود؛ هرگز به feature دیگر.</p>
+      </blockquote>
+    </section>
+
+    <hr />
+
+    <!-- §3 -->
+    <section id="sec-3">
+      <h2>۳. ساختار ماژول‌ها</h2>
+
+      <h3>۳.۱ ماژول‌های زیرساخت</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>ماژول</th><th>مسئولیت</th></tr></thead>
+        <tbody>
+          <tr><td><code>:app</code></td><td>نقطه‌ی ورود، تجمیع <code>FeatureEntry</code>ها، Navigation graph، Application class</td></tr>
+          <tr><td><code>:build-logic</code></td><td>Convention Plugins برای یکنواخت‌سازی Gradle (<code>compileSdk</code>, <code>minSdk</code>, Compose, Hilt, ...)</td></tr>
+          <tr><td><code>:core:network</code></td><td>OkHttp + Retrofit + Json + AuthInterceptor + TokenAuthenticator + Logging + Cert Pinning — همه Singleton</td></tr>
+          <tr><td><code>:core:database</code></td><td>Room DB instance + Migration registry (یک DB واحد، DAOها در ماژول‌های feature تعریف می‌شوند)</td></tr>
+          <tr><td><code>:core:datastore</code></td><td>Encrypted DataStore + TokenStorage + Preferences</td></tr>
+          <tr><td><code>:core:common</code></td><td><code>Result</code>, <code>AppError</code>, <code>Dispatchers</code>, Extensions، Date/Format helpers</td></tr>
+          <tr><td><code>:core:navigation</code></td><td><code>FeatureEntry</code>, <code>AppDestinations</code>, Deep Links، Navigation events</td></tr>
+          <tr><td><code>:core:designsystem</code></td><td>Theme, Colors, Typography, Dimens, Shapes</td></tr>
+          <tr><td><code>:core:ui</code></td><td>Composable helpers مشترک (ErrorState, Paging UI, LoadingShimmer, Toast/Snackbar)</td></tr>
+          <tr><td><code>:core:analytics</code></td><td>Analytics manager + Screen tracker</td></tr>
+          <tr><td><code>:core:notifications</code></td><td>FCM + NotificationCompat</td></tr>
+          <tr><td><code>:core:location</code></td><td>Play Services Location + WorkManager Worker</td></tr>
+          <tr><td><code>:core:upload</code></td><td>WorkManager Upload Worker</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>۳.۲ Shared Kernel</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>ماژول</th><th>مسئولیت</th></tr></thead>
+        <tbody>
+          <tr><td><code>:shared-kernel</code></td><td><strong>خیلی نازک.</strong> فقط مدل‌ها/قراردادهایی که چند feature به آن نیاز دارند: <code>User</code>, <code>Session</code>, <code>Coordinates</code>, <code>AppError</code>, <code>Result</code>, <code>TokenStorage</code> interface</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>۳.۳ ماژول‌های Feature (Vertical Slice)</h3>
+      <p>هر <code>:feature:&lt;name&gt;</code> ساختار داخلی استاندارد دارد:</p>
+<pre><code>:feature:myloads/
+├── domain/         (internal)  UseCase + Model + Repository Interface
+├── data/           (internal)  Api + Dto + Mapper + RepositoryImpl + Dao
+├── presentation/   (internal)  ViewModel + UiState + UiEffect
+├── ui/             (internal)  Composable Screens + Sections
+├── di/             (internal)  Hilt Modules (provides Api/Repo/UseCase)
+└── navigation/     (public)    FeatureEntry + Routes</code></pre>
+      <p>featureهای پیشنهادی: <code>auth</code>, <code>home</code>, <code>myloads</code>, <code>createcargo</code>, <code>calls</code>, <code>waybill</code>, <code>priceinquiry</code>, <code>account</code>.</p>
+    </section>
+
+    <hr />
+
+    <!-- §4 -->
+    <section id="sec-4">
+      <h2>۴. لایه‌بندی داخلی هر Feature</h2>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    UI["ui<br/>Composable"] --> VM["presentation<br/>ViewModel + UiState"]
+    VM --> UC["domain<br/>UseCase"]
+    UC --> RI["domain<br/>Repository Interface"]
+    RI --> RImpl["data<br/>RepositoryImpl"]
+    RImpl --> Remote["data<br/>Remote DataSource (Api)"]
+    RImpl --> Local["data<br/>Local DataSource (Dao)"]
+    Remote --> CoreNet[":core:network<br/>Retrofit (Singleton)"]
+    Local --> CoreDb[":core:database<br/>Room DB (Singleton)"]
+    RImpl -.->|"prefs / token / flags"| Prefs["data<br/>Preferences DataSource"]
+    Prefs --> CoreDs[":core:datastore<br/>Encrypted DataStore (Singleton)"]
+    CoreNet -.->|"Auth Interceptor reads token"| CoreDs
+</pre>
+      </div>
+
+      <h3>قاعده‌های لایه</h3>
+      <ul>
+        <li><strong>UI</strong> فقط <code>UiState</code> می‌خواند و <code>onXxx()</code> صدا می‌زند.</li>
+        <li><strong>ViewModel</strong> فقط <code>UseCase</code> تزریق می‌کند، نه Repository.</li>
+        <li><strong>UseCase</strong> فقط <code>Repository Interface</code> می‌بیند.</li>
+        <li><strong>RepositoryImpl</strong> از Api، Dao و (در صورت نیاز) DataStore استفاده می‌کند و نگاشت Dto ↔ DomainModel انجام می‌دهد.</li>
+      </ul>
+
+      <h3>نقش DataStore در این لایه‌بندی</h3>
+      <ul>
+        <li><strong>زیرساخت کناری</strong> — در پایپ اصلی شبکه/cache نیست؛ خط‌چین نشان می‌دهد که فقط در صورت نیاز استفاده می‌شود.</li>
+        <li><strong>مصرف‌کننده‌های اصلی:</strong>
+          <ul>
+            <li><code>AuthInterceptor</code> در <code>:core:network</code> برای خواندن Token (مسیر خط‌چین مستقیم)</li>
+            <li>RepositoryImpl ها برای خواندن/نوشتن Settings، Theme، Feature Flags محلی، Last-sync timestamp</li>
+            <li><code>SessionRepository</code>، <code>ThemeRepository</code>، <code>ListUpdateStorage</code></li>
+          </ul>
+        </li>
+        <li><strong>چه چیزی در DataStore برود:</strong> فقط داده‌های کوچک key-value (Token، Boolean flag، String, Int، Long).</li>
+        <li><strong>چه چیزی نرود:</strong> لیست‌های حجیم، داده‌های Pagination، روابط جدولی → اینها در Room (در صورت نیاز) قرار می‌گیرند.</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §5 -->
+    <section id="sec-5">
+      <h2>۵. State Management: UDF MVVM</h2>
+
+      <h3>۵.۱ قواعد سفت</h3>
+      <ol>
+        <li><strong>یک <code>data class UiState</code> به ازای هر صفحه</strong> — immutable.</li>
+        <li><strong>یک <code>StateFlow&lt;UiState&gt;</code></strong> — هرگز چند StateFlow/LiveData موازی برای فیلدهای جدا.</li>
+        <li><strong><code>SharedFlow&lt;UiEffect&gt;</code></strong> برای رویدادهای یک‌بار‌مصرف (Navigate, Snackbar, Toast).</li>
+        <li><strong>توابع <code>onXxx()</code></strong> در ViewModel به جای sealed <code>Action</code> (مگر صفحه پیچیده باشد).</li>
+        <li><strong><code>copy()</code></strong> روی UiState برای هر تغییر state.</li>
+        <li>در Compose: <code>collectAsStateWithLifecycle()</code> فقط روی همان <code>uiState</code>.</li>
+      </ol>
+
+      <h3>۵.۲ ساختار استاندارد UiState</h3>
+      <ul>
+        <li>یک data class با فیلدهای: <code>data: T?</code>, <code>isLoading: Boolean</code>, <code>error: AppError?</code> (یا <code>sealed class ScreenState</code>).</li>
+        <li>یک <code>data class</code> جدا برای فرم‌ها و input fields در صورت نیاز.</li>
+        <li>هرگز کلاس‌های Domain را مستقیم در UiState قرار نده — اگر لازم شد wrapper بزن.</li>
+      </ul>
+
+      <h3>۵.۳ ساختار UiEffect</h3>
+      <ul>
+        <li><code>sealed interface XxxUiEffect</code></li>
+        <li>مثال: <code>NavigateToDetail(id)</code>, <code>ShowSnackbar(msg)</code>, <code>RequestPermission</code>.</li>
+      </ul>
+
+      <h3>۵.۴ مزایا نسبت به وضعیت فعلی</h3>
+      <ul>
+        <li>حذف کامل LiveDataها.</li>
+        <li>حذف State پراکنده در فیلدهای جدا.</li>
+        <li>SSOT برای هر صفحه.</li>
+        <li>Recompose بهینه‌تر در Compose.</li>
+        <li>Test ساده (UiState فقط data است).</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §6 -->
+    <section id="sec-6">
+      <h2>۶. Cross-cutting Concerns — همه در <code>core</code></h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>موضوع</th><th>محل</th><th>تعداد نمونه</th></tr></thead>
+        <tbody>
+          <tr><td><code>OkHttpClient</code></td><td><code>:core:network</code></td><td>یک Singleton</td></tr>
+          <tr><td><code>Retrofit</code></td><td><code>:core:network</code></td><td>یک Singleton</td></tr>
+          <tr><td><code>Json</code> config</td><td><code>:core:network</code></td><td>یک Singleton</td></tr>
+          <tr><td><code>AuthInterceptor</code></td><td><code>:core:network</code></td><td>یک Singleton</td></tr>
+          <tr><td><code>TokenAuthenticator</code></td><td><code>:core:network</code></td><td>یک Singleton</td></tr>
+          <tr><td><code>HttpLoggingInterceptor</code></td><td><code>:core:network</code></td><td>یک</td></tr>
+          <tr><td>Headers (User-Agent, X-App-Version)</td><td><code>:core:network</code></td><td>متمرکز</td></tr>
+          <tr><td>Cert Pinning</td><td><code>:core:network</code></td><td>متمرکز</td></tr>
+          <tr><td><code>safeApiCall</code> + <code>ApiErrorParser</code></td><td><code>:core:network</code></td><td>متمرکز (مدیریت <code>isSuccessful</code>/<code>errorBody</code> و نگاشت به <code>Result&lt;AppError&gt;</code>)</td></tr>
+          <tr><td><code>Room Database</code></td><td><code>:core:database</code></td><td>یک Singleton</td></tr>
+          <tr><td>Migration registry</td><td><code>:core:database</code></td><td>متمرکز</td></tr>
+          <tr><td><code>Encrypted DataStore</code></td><td><code>:core:datastore</code></td><td>یک Singleton</td></tr>
+          <tr><td><code>TokenStorage</code></td><td><code>:core:datastore</code></td><td>یک Singleton</td></tr>
+          <tr><td>Analytics, Logging, Crashlytics</td><td><code>:core:analytics</code></td><td>متمرکز</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <blockquote>
+        <p><strong>هیچ feature هرگز Interceptor، OkHttpClient، یا Retrofit نمی‌سازد.</strong> featureها فقط <code>retrofit.create&lt;MyFeatureApi&gt;()</code> و <code>database.myFeatureDao()</code> را دریافت می‌کنند.</p>
+      </blockquote>
+
+      <h3>مزایا</h3>
+      <ul>
+        <li>Token refresh متمرکز → بدون race condition.</li>
+        <li>Cert pinning واحد → بدون نشتی امنیتی.</li>
+        <li>Connection pool واحد → بهینه‌سازی حافظه.</li>
+        <li>اضافه کردن Header جدید = یک تغییر در <code>core:network</code>.</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §7 -->
+    <section id="sec-7">
+      <h2>۷. مدیریت متمرکز خطای API — <code>safeApiCall</code></h2>
+
+      <h3>۷.۱ هدف</h3>
+      <ul>
+        <li><strong>یک گلوگاه واحد</strong> برای همه‌ی فراخوانی‌های شبکه.</li>
+        <li>بررسی متمرکز <code>Response.isSuccessful</code>، <code>code()</code>، <code>body()</code> و <code>errorBody()</code>.</li>
+        <li>تبدیل خودکار <code>Response&lt;T&gt;</code> و Exceptionها به <code>Result&lt;T, AppError&gt;</code>.</li>
+        <li>جلوگیری از تکرار <code>try/catch</code> در Repositoryها.</li>
+        <li>ارسال خودکار Crashlytics non-fatal برای خطاهای بحرانی.</li>
+        <li>آماده برای افزودن Retry/Backoff/Telemetry بدون تغییر در Repositoryها.</li>
+      </ul>
+
+      <h3>۷.۲ محل قرارگیری</h3>
+      <ul>
+        <li><strong><code>:core:network</code></strong> → <code>SafeApiCall.kt</code>, <code>ApiErrorParser.kt</code>, <code>ProblemDetailsDto.kt</code>, <code>ApiResultExtensions.kt</code>.</li>
+        <li><strong><code>:shared-kernel</code></strong> → استفاده از <code>Result&lt;T&gt;</code> و <code>AppError</code> موجود (همان <code>domain/core/Result.kt</code> و <code>NetworkErrorMapper.kt</code> فعلی، که به shared-kernel منتقل می‌شوند).</li>
+      </ul>
+
+      <h3>۷.۳ جریان داخلی</h3>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    Repo["RepositoryImpl.getData()"] -->|"safeApiCall { api.xxx() }"| Safe[safeApiCall]
+    Safe --> Try{"اجرای block در IoDispatcher"}
+
+    Try -->|"Response.isSuccessful + body!=null"| OkPath["Result.Ok(body)"]
+    Try -->|"Response.isSuccessful + body==null"| EmptyPath["Result.Err(AppError.Validation 'empty body')"]
+    Try -->|"!isSuccessful"| Parse["ApiErrorParser.parse(errorBody)"]
+    Parse --> MapHttp["NetworkErrorMapper.mapHttpCode(code, msg)"]
+    MapHttp --> ErrResult["Result.Err(AppError.*)"]
+
+    Try -->|"HttpException"| Parse
+    Try -->|"IOException / Timeout / DNS / SSL"| MapNet["NetworkErrorMapper.mapException(t)"]
+    MapNet --> ErrResult
+
+    Try -->|"SerializationException"| Validation["Result.Err(AppError.Validation 'parse error')"]
+    Try -->|"CancellationException"| Rethrow["throw"]
+    Try -->|"Throwable"| UnknownPath["Result.Err(AppError.Unknown(t))"]
+
+    OkPath --> Done[بازگشت به Repository]
+    ErrResult --> Done
+    UnknownPath --> Done
+    Validation --> Done
+    EmptyPath --> Done
+
+    ErrResult -.->|"non-fatal"| Crash[Crashlytics]
+    UnknownPath -.->|"non-fatal"| Crash
+</pre>
+      </div>
+
+      <h3>۷.۴ امضاهای پیشنهادی</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>امضا</th><th>کاربرد</th></tr></thead>
+        <tbody>
+          <tr><td><code>suspend fun &lt;T&gt; safeApiCall(tag: String? = null, block: suspend () -&gt; Response&lt;T&gt;): Result&lt;T&gt;</code></td><td>وقتی Api مستقیماً <code>Response&lt;T&gt;</code> برمی‌گرداند</td></tr>
+          <tr><td><code>suspend fun &lt;T&gt; safeApiCall(tag: String? = null, block: suspend () -&gt; T): Result&lt;T&gt;</code></td><td>وقتی Api فقط <code>T</code> برمی‌گرداند (Retrofit suspend) — با <code>try/catch</code> روی <code>HttpException</code></td></tr>
+          <tr><td><code>suspend fun &lt;T, R&gt; safeEnvelopeCall(tag: String? = null, block: suspend () -&gt; Response&lt;EnvelopeDto&lt;T&gt;&gt;, map: (T) -&gt; R): Result&lt;R&gt;</code></td><td>وقتی پاسخ سرور Envelope دارد (مثل <code>OtpMetaEnvelopeDto</code>) و باید unwrap + map شود</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>Dispatcher: درون <code>safeApiCall</code> با <code>withContext(IoDispatcher)</code> تا فراخواننده مجبور به مراقبت نباشد.</li>
+        <li>پارامتر <code>tag</code> برای Logging و Tracing.</li>
+        <li><code>CancellationException</code> هرگز catch نشود — همیشه propagate شود.</li>
+      </ul>
+
+      <h3>۷.۵ مسئولیت‌ها</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>مسئولیت</th><th>جزئیات</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Status check</strong></td><td><code>response.isSuccessful</code> + null-check روی <code>body()</code></td></tr>
+          <tr><td><strong>HTTP error parse</strong></td><td>خواندن <code>errorBody().string()</code> و parse با <code>Json</code> (تزریق‌شده از NetworkModule) به <code>ProblemDetailsDto</code></td></tr>
+          <tr><td><strong>Validation 422</strong></td><td>استخراج فیلدهای خطا (<code>errors: Map&lt;String, List&lt;String&gt;&gt;</code>) و انتقال به <code>AppError.Validation</code></td></tr>
+          <tr><td><strong>Auth 401/403</strong></td><td>تبدیل به <code>AppError.Auth</code> (Refresh توسط <code>TokenAuthenticator</code> انجام می‌شود؛ <code>safeApiCall</code> فقط بعد از retry می‌بیند)</td></tr>
+          <tr><td><strong>Network exceptions</strong></td><td>استفاده از <code>NetworkErrorMapper.mapException(t)</code> موجود</td></tr>
+          <tr><td><strong>Serialization exceptions</strong></td><td><code>kotlinx.serialization.SerializationException</code> → <code>AppError.Validation</code></td></tr>
+          <tr><td><strong>Cancellation</strong></td><td>بازپرتاب <code>CancellationException</code> (هرگز catch نشود)</td></tr>
+          <tr><td><strong>Logging</strong></td><td><code>Log.e(tag, ...)</code> فقط در DEBUG، با sanitization (هرگز Token در لاگ)</td></tr>
+          <tr><td><strong>Crashlytics non-fatal</strong></td><td>برای <code>AppError.Unknown</code> و <code>AppError.Network(5xx)</code></td></tr>
+          <tr><td><strong>Tagging</strong></td><td>پارامتر اختیاری <code>tag</code> برای Trace و Log</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>۷.۶ ApiErrorParser و ProblemDetailsDto</h3>
+      <ul>
+        <li>یک <code>ProblemDetailsDto</code> استاندارد (RFC 7807-style) در <code>:core:network</code>:
+          <ul><li>فیلدها: <code>title</code>, <code>detail</code>, <code>code</code>, <code>status</code>, <code>errors: Map&lt;String, List&lt;String&gt;&gt;?</code>.</li></ul>
+        </li>
+        <li>یک <code>ApiErrorParser</code> که:
+          <ol>
+            <li>تلاش می‌کند <code>errorBody.string()</code> را به <code>ProblemDetailsDto</code> parse کند.</li>
+            <li>اگر شکست خورد، fallback به <code>errorBody.string()</code> خام به‌عنوان message.</li>
+            <li>اگر body تهی بود، از <code>Response.message()</code> استفاده کند.</li>
+            <li>ساختار یکپارچه برای همه‌ی endpointها فراهم می‌کند.</li>
+          </ol>
+        </li>
+      </ul>
+
+      <h3>۷.۷ Extensions کاربردی</h3>
+      <p>در <code>:core:network</code>:</p>
+      <ul>
+        <li><code>Response&lt;T&gt;.parseErrorOrNull(json: Json): ProblemDetailsDto?</code> — کمک به <code>safeApiCall</code>.</li>
+        <li><code>Result&lt;T&gt;.onErrorReport()</code> — Crashlytics non-fatal خودکار.</li>
+        <li><code>Result&lt;T&gt;.mapData(transform: (T) -&gt; R): Result&lt;R&gt;</code> — برای نگاشت Dto → DomainModel.</li>
+      </ul>
+
+      <h3>۷.۸ یکپارچگی با لایه‌های دیگر</h3>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    VM[ViewModel] -->|"calls"| UC[UseCase]
+    UC -->|"calls"| RI[Repository Interface]
+    RI -.->|"impl"| RImpl[RepositoryImpl]
+    RImpl -->|"safeApiCall { api.xxx() }"| Safe[safeApiCall]
+    Safe --> Api[Retrofit Api]
+    Api --> Safe
+    Safe -->|"Result_Dto"| RImpl
+    RImpl -->|"mapData { it.toDomain() }"| RImpl2[Result_DomainModel]
+    RImpl2 -->|"Result_DomainModel"| UC
+    UC -->|"Result_DomainModel"| VM
+    VM -->|"copy() UiState"| UI[Composable]
+</pre>
+      </div>
+      <ul>
+        <li><strong>Repository هرگز Exception پرت نمی‌کند</strong> — همیشه <code>Result</code> برمی‌گرداند.</li>
+        <li><strong>UseCase</strong> همان <code>Result</code> را propagate می‌کند (یا با <code>mapData</code> نگاشت می‌کند).</li>
+        <li><strong>ViewModel</strong> بسته به <code>Result.Ok</code> یا <code>Result.Err</code>، <code>UiState</code> را با <code>copy()</code> به‌روز می‌کند یا <code>UiEffect</code> می‌فرستد.</li>
+      </ul>
+
+      <h3>۷.۹ مزایا</h3>
+      <ul>
+        <li>صفر تکرار <code>try/catch</code> در Repositoryها.</li>
+        <li>یک نقطه برای تغییر سیاست خطا (تغییر در یک فایل = اعمال در کل پروژه).</li>
+        <li>Crashlytics non-fatal خودکار → دیدن خطاهای واقعی production بدون کد اضافه.</li>
+        <li>پایه‌ی Retry/Backoff قابل افزودن در همان <code>safeApiCall</code> بدون لمس Repositoryها.</li>
+        <li>تست‌پذیری بالا — رفتار خطا در یک جا تست می‌شود.</li>
+        <li>ساختار یکنواخت پیام‌های خطا برای کل اپ.</li>
+      </ul>
+
+      <h3>۷.۱۰ سیاست‌های قابل افزودن (آینده، بدون تغییر در Repositoryها)</h3>
+      <ul>
+        <li><strong>Retry با Exponential Backoff</strong> برای کدهای 502/503/504.</li>
+        <li><strong>Circuit Breaker</strong> برای endpoint های بحرانی.</li>
+        <li><strong>Idempotency Key</strong> برای POSTهای حساس (Auth, Payment).</li>
+        <li><strong>Telemetry</strong>: زمان پاسخ + status code → Firebase Performance Trace.</li>
+        <li><strong>Rate-limit aware</strong>: احترام به <code>Retry-After</code> در 429.</li>
+        <li><strong>Offline detection</strong>: قبل از فراخوانی، بررسی <code>ConnectivityManager</code>.</li>
+      </ul>
+
+      <h3>۷.۱۱ قاعده‌های Konsist مرتبط</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>قاعده</th><th>پیغام شکست</th></tr></thead>
+        <tbody>
+          <tr><td>هر <code>*RepositoryImpl</code> باید فقط از طریق <code>safeApiCall</code> با <code>Api</code> ارتباط بگیرد</td><td><code>Direct api.* call without safeApiCall is forbidden</code></td></tr>
+          <tr><td><code>safeApiCall</code> فقط می‌تواند در <code>:core:network</code> تعریف شود</td><td><code>safeApiCall must reside in :core:network</code></td></tr>
+          <tr><td><code>*Repository*</code> نباید <code>HttpException</code> یا <code>IOException</code> را catch کند</td><td><code>Catching network exceptions in Repository is forbidden — use safeApiCall</code></td></tr>
+          <tr><td><code>*RepositoryImpl</code> نباید <code>try/catch</code> روی <code>Throwable</code> داشته باشد</td><td><code>Use safeApiCall instead of try/catch</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>۷.۱۲ نسبت با وضعیت فعلی پروژه</h3>
+      <ul>
+        <li>در <code>domain/src/main/kotlin/com/bt/barex/domain/core/NetworkErrorMapper.kt</code> منطق نگاشت کد HTTP و Exception به <code>AppError</code> آماده است → فقط <code>safeApiCall</code> نازک روی آن نوشته می‌شود.</li>
+        <li>در <code>data/src/main/java/com/bt/barex/data/repository/auth/AuthRepositoryImpl.kt</code> (۴۵۹ خط) <code>try/catch</code> و <code>errorBody</code> parsing به‌صورت دستی تکرار شده‌اند → بعد از معرفی <code>safeApiCall</code> این تکرارها حذف می‌شوند.</li>
+        <li><code>Result</code> و <code>AppError</code> موجود در <code>domain/core/Result.kt</code> بدون تغییر استفاده می‌شوند (فقط محل به <code>:shared-kernel</code> منتقل می‌شود).</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §8 -->
+    <section id="sec-8">
+      <h2>۸. Room — پایلوت فقط در <code>:feature:calls</code> (الگوی مرجع)</h2>
+      <blockquote>
+        <p><strong>محدوده‌ی کاملاً مشخص:</strong> فقط feature تماس‌های اخیر (<code>:feature:calls</code>) از Room استفاده می‌کند. هدف: داشتن یک <strong>پیاده‌سازی مرجع کامل</strong> که هر feature آینده‌ای که نیاز به cache/offline داشت، از روی آن کپی کند. سایر featureها (myloads، account، home، ...) <strong>بدون Room</strong> هستند و مستقیم از Api می‌خوانند.</p>
+      </blockquote>
+
+      <h3>۸.۱ چرا فقط <code>:feature:calls</code>؟</h3>
+      <ul>
+        <li><strong>حجم دیتای مناسب</strong>: تماس‌ها رکوردهای کوچک، تعداد محدود، مرتبط با راننده.</li>
+        <li><strong>ارزش آفلاین واقعی</strong>: راننده در جاده باید سابقه‌ی تماس‌هایش را حتی بدون اینترنت ببیند.</li>
+        <li><strong>مدل ساده</strong>: بدون رابطه‌ی پیچیده‌ی بین جداول → الگوی تمیز.</li>
+        <li><strong>Pagination از سرور</strong>: تست‌کننده‌ی الگوی کامل <code>RemoteMediator</code> (مهم‌ترین قسمت).</li>
+        <li><strong>ریسک پایین</strong>: اگر مشکلی پیش آمد، فقط یک feature متاثر می‌شود.</li>
+      </ul>
+
+      <h3>۸.۲ الگوی استاندارد: Paging 3 + RemoteMediator + Room</h3>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    UI["UI<br/>LazyColumn"] --> VM[ViewModel]
+    VM -->|"Flow PagingData"| Pager[Pager 3]
+    Pager -->|"observe"| Dao["CallsDao<br/>PagingSource"]
+    Dao --> DB[(Room DB)]
+    Pager -->|"out of data"| RM[CallsRemoteMediator]
+    RM -->|"safeApiCall"| Api[CallsApi]
+    Api --> RM
+    RM -->|"upsert + RemoteKeys"| DB
+</pre>
+      </div>
+      <ul>
+        <li><strong>UI همیشه از Room می‌خواند</strong> → آفلاین کار می‌کند.</li>
+        <li><strong>شبکه پشت‌صحنه</strong> توسط <code>RemoteMediator</code> هندل می‌شود.</li>
+        <li><strong><code>safeApiCall</code></strong> داخل RemoteMediator استفاده می‌شود.</li>
+      </ul>
+
+      <h3>۸.۳ ساختار <code>:feature:calls</code> (Vertical Slice با Room)</h3>
+<pre><code>:feature:calls/
+├── domain/
+│   ├── model/Call.kt
+│   ├── repository/CallsRepository.kt
+│   └── usecase/GetPagedCallsUseCase.kt
+├── data/
+│   ├── remote/
+│   │   ├── CallsApi.kt
+│   │   └── dto/CallDto.kt
+│   ├── local/
+│   │   ├── CallEntity.kt
+│   │   ├── CallRemoteKeyEntity.kt
+│   │   ├── CallsDao.kt
+│   │   └── CallsRemoteKeysDao.kt
+│   ├── paging/CallsRemoteMediator.kt
+│   ├── mapper/CallMappers.kt
+│   └── repository/CallsRepositoryImpl.kt
+├── presentation/
+│   ├── CallsUiState.kt
+│   └── CallsViewModel.kt
+├── ui/CallsScreen.kt
+├── di/CallsModule.kt
+└── navigation/CallsFeatureEntry.kt</code></pre>
+
+      <h3>۸.۴ جداول Room (در <code>:core:database</code> ثبت می‌شوند)</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>جدول</th><th>مسئولیت</th></tr></thead>
+        <tbody>
+          <tr><td><code>calls</code></td><td>Entity اصلی (id, phoneNumber, driverName, startedAt, duration, outcome, ...) + <code>cachedAt: Long</code></td></tr>
+          <tr><td><code>calls_remote_keys</code></td><td>(id, prevKey, nextKey) برای pagination</td></tr>
+          <tr><td><code>calls_meta</code> (اختیاری)</td><td>timestamp آخرین refresh برای TTL</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>DAOها در ماژول feature تعریف می‌شوند ولی Entityها در <code>:core:database</code> ثبت می‌شوند تا یک Database واحد داشته باشیم.</p>
+
+      <h3>۸.۵ مسئولیت‌های CallsRemoteMediator</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>LoadType</th><th>رفتار</th></tr></thead>
+        <tbody>
+          <tr><td><code>REFRESH</code></td><td>پاک کردن <code>calls</code> + <code>calls_remote_keys</code> → گرفتن صفحه‌ی ۱ → upsert</td></tr>
+          <tr><td><code>APPEND</code></td><td>خواندن <code>nextKey</code> آخرین آیتم → فراخوانی Api → upsert + ذخیره‌ی RemoteKey جدید</td></tr>
+          <tr><td><code>PREPEND</code></td><td>معمولاً <code>endOfPaginationReached = true</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p><strong>نکات:</strong></p>
+      <ul>
+        <li>استفاده از <code>safeApiCall</code> برای فراخوانی شبکه.</li>
+        <li><code>RoomDatabase.withTransaction { ... }</code> برای atomic insert.</li>
+        <li>TTL: مثلاً ۱۵ دقیقه — اگر <code>cachedAt</code> expired شد در REFRESH تازه می‌شود.</li>
+      </ul>
+
+      <h3>۸.۶ جریان کامل از UI تا Room</h3>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    UI[CallsScreen] -->|"collectAsLazyPagingItems"| VM[CallsViewModel]
+    VM -->|"pagedCalls: Flow PagingData Call"| UC[GetPagedCallsUseCase]
+    UC --> Repo[CallsRepository]
+    Repo -.->|"impl"| RImpl[CallsRepositoryImpl]
+    RImpl --> Pager[Pager]
+    Pager -->|"PagingSource"| Dao[CallsDao]
+    Pager -->|"RemoteMediator"| RM[CallsRemoteMediator]
+    RM --> SafeCall[safeApiCall]
+    SafeCall --> Api[CallsApi]
+    RM --> DB[(Room calls + calls_remote_keys)]
+    Dao --> DB
+    Dao -->|"PagingData"| Pager
+</pre>
+      </div>
+
+      <h3>۸.۷ قواعد طلایی الگو</h3>
+      <ol>
+        <li><strong>UI هرگز مستقیم Api نمی‌خواند</strong> — همیشه از Room.</li>
+        <li><strong>ViewModel فقط <code>Flow&lt;PagingData&lt;Call&gt;&gt;</code> می‌بیند</strong> — جزئیات Room/شبکه پنهان.</li>
+        <li><strong>Mapping در دو لایه:</strong> <code>CallDto → CallEntity</code> (در RemoteMediator) و <code>CallEntity → Call domain model</code> (در PagingSource map).</li>
+        <li><strong>شبکه فقط با <code>safeApiCall</code></strong> — نه <code>try/catch</code> در RemoteMediator.</li>
+        <li><strong>یک Database واحد</strong> — جداول calls در <code>:core:database</code> ثبت می‌شوند، نه DB مجزا.</li>
+        <li><strong>TTL و Refresh policy</strong> متمرکز در RemoteMediator.</li>
+      </ol>
+
+      <h3>۸.۸ کپی‌برداری برای featureهای آینده</h3>
+      <p>اگر روزی feature <code>myloads</code> یا <code>cargoSearch</code> نیاز به cache/offline پیدا کرد:</p>
+      <ol>
+        <li>ساختار <code>:feature:calls/data/local/</code> و <code>paging/</code> را به feature هدف کپی کن.</li>
+        <li>Entity, Dao, RemoteKey, RemoteMediator را با مدل feature جدید جایگزین کن.</li>
+        <li>Entity جدید را در <code>:core:database</code> (<code>AppDatabase.entities</code> و version bump + Migration) ثبت کن.</li>
+        <li>تمام.</li>
+      </ol>
+      <p>این یعنی <strong>هزینه‌ی افزودن Room به featureهای بعدی ≈ ۱ روز کار</strong> به‌جای ۱ هفته‌ی طراحی از صفر.</p>
+
+      <h3>۸.۹ سایر featureها (بدون Room)</h3>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    UI[UI] --> VM[ViewModel]
+    VM --> UC[UseCase]
+    UC --> Repo[RepositoryImpl]
+    Repo -->|"safeApiCall"| Api[Retrofit Api]
+</pre>
+      </div>
+      <ul>
+        <li>جریان ساده: UI → ViewModel → UseCase → Repository → safeApiCall → Api.</li>
+        <li>بدون Room، بدون RemoteMediator.</li>
+        <li>در صورت اینترنت قطع: UiState با <code>AppError.Network</code> → نمایش error state در UI.</li>
+      </ul>
+
+      <h3>۸.۱۰ Anti-patterns مختص این بخش</h3>
+      <ul>
+        <li><span class="cross">✕</span> ساخت Database مجزا برای feature calls (همه‌ی Entityها در یک <code>AppDatabase</code> ثبت شوند)</li>
+        <li><span class="cross">✕</span> استفاده از Room در featureهای دیگر بدون justify (افزودن پیچیدگی بدون نیاز)</li>
+        <li><span class="cross">✕</span> فراخوانی مستقیم Api در ViewModel به‌جای عبور از Pager + RemoteMediator</li>
+        <li><span class="cross">✕</span> Bypass کردن <code>safeApiCall</code> در RemoteMediator</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §9 -->
+    <section id="sec-9">
+      <h2>۹. Inter-feature Communication</h2>
+
+      <h3>قاعده‌ی طلایی</h3>
+      <blockquote>
+        <p>Featureها هرگز به یکدیگر import مستقیم ندارند.</p>
+      </blockquote>
+
+      <h3>مسیرهای مجاز</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>نوع تعامل</th><th>مسیر</th></tr></thead>
+        <tbody>
+          <tr><td>Navigation از feature A به feature B</td><td><code>FeatureEntry</code> در <code>:core:navigation</code></td></tr>
+          <tr><td>اشتراک مدل (مثلاً User, Session)</td><td><code>:shared-kernel</code></td></tr>
+          <tr><td>اشتراک قرارداد (مثلاً TokenStorage)</td><td>interface در <code>:shared-kernel</code></td></tr>
+          <tr><td>Event/Notification cross-feature</td><td><code>EventBus</code> نازک در <code>:core:common</code> (یا <code>SharedFlow</code>)</td></tr>
+          <tr><td>Deep Link و Notification routing</td><td><code>:core:navigation</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- §10 -->
+    <section id="sec-10">
+      <h2>۱۰. Boundary &amp; Visibility Rules</h2>
+
+      <h3>قواعد کامپایل‌تایم (با <code>internal</code>)</h3>
+      <p>هر کلاس داخل feature باید با <code>internal</code> باشد، مگر:</p>
+      <ul>
+        <li><code>FeatureEntry</code></li>
+        <li>چند <code>Route</code> constant در <code>navigation/</code></li>
+        <li>مدل‌های مشترک منتقل‌شده به <code>:shared-kernel</code></li>
+      </ul>
+
+      <h3>قواعد Konsist (CI Gate)</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>قاعده</th><th>پیغام شکست</th></tr></thead>
+        <tbody>
+          <tr><td><code>*ViewModel</code> نباید به <code>*Repository</code> وابسته باشد</td><td><code>Use UseCase instead of Repository in ViewModel</code></td></tr>
+          <tr><td>فقط <code>:data</code> و <code>:core:*</code> می‌توانند <code>okhttp3.*</code> را import کنند</td><td><code>Networking only allowed in :core:network</code></td></tr>
+          <tr><td><code>:domain</code> نباید به <code>android.*</code> وابسته باشد</td><td><code>Keep domain pure JVM</code></td></tr>
+          <tr><td>Feature نباید feature دیگر را import کند</td><td><code>Cross-feature dependency forbidden</code></td></tr>
+          <tr><td><code>*Repository</code> فقط در <code>:data</code> می‌تواند پیاده‌سازی شود</td><td><code>RepositoryImpl must live in feature data layer</code></td></tr>
+          <tr><td>Composable ≤ ۴۰۰ خط، File ≤ ۶۰۰ خط</td><td><code>Split large files</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>ابزارهای CI</h3>
+      <ul>
+        <li><strong>Konsist</strong> — قواعد ساختاری.</li>
+        <li><strong>Detekt</strong> — قواعد کیفیت کد + complexity.</li>
+        <li><strong>Android Lint</strong> — قواعد رسمی.</li>
+        <li><strong>Module Graph Assertions</strong> — جلوگیری از وابستگی‌های ناخواسته.</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §11 -->
+    <section id="sec-11">
+      <h2>۱۱. DI Strategy (Hilt)</h2>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    AppHilt["@HiltAndroidApp<br/>Application"] --> Singleton[SingletonComponent]
+    Singleton --> NetMod["NetworkModule<br/>(:core:network)"]
+    Singleton --> DbMod["DatabaseModule<br/>(:core:database)"]
+    Singleton --> DsMod["DataStoreModule<br/>(:core:datastore)"]
+    Singleton --> FeatureDi1["MyLoadsModule<br/>(:feature:myloads:di)"]
+    Singleton --> FeatureDi2["AuthModule<br/>(:feature:auth:di)"]
+    FeatureDi1 -.->|"provides MyLoadsApi"| Singleton
+    FeatureDi1 -.->|"binds RepositoryImpl"| Singleton
+</pre>
+      </div>
+      <ul>
+        <li>همه‌ی modules در <code>SingletonComponent</code> نصب می‌شوند.</li>
+        <li><code>@Binds</code> برای Repository (Interface ↔ Impl).</li>
+        <li><code>@Provides @Singleton</code> برای Api ها.</li>
+        <li><code>@HiltViewModel</code> برای ViewModelها.</li>
+        <li>DAOها از <code>:core:database</code> با <code>@Provides</code> در DI ماژول feature گرفته می‌شوند.</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §12 -->
+    <section id="sec-12">
+      <h2>۱۲. Performance Stack</h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>محور</th><th>راه‌حل</th></tr></thead>
+        <tbody>
+          <tr><td>Cold Start</td><td>Baseline Profile + Startup Profile + App Startup library</td></tr>
+          <tr><td>Compose</td><td>Stable types + <code>kotlinx.collections.immutable</code> + <code>key()</code> در LazyColumn + <code>derivedStateOf</code></td></tr>
+          <tr><td>Build</td><td>K2 compiler + ksp2 + Configuration Cache + Convention Plugins + Module Graph Assertions</td></tr>
+          <tr><td>Runtime</td><td>LeakCanary در debug + Strict Mode</td></tr>
+          <tr><td>Memory</td><td>OkHttp/Retrofit/Room همه Singleton</td></tr>
+          <tr><td>Image</td><td>Coil با memory + disk cache</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- §13 -->
+    <section id="sec-13">
+      <h2>۱۳. Observability Stack</h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>ابزار</th><th>کار</th></tr></thead>
+        <tbody>
+          <tr><td>Firebase Crashlytics</td><td>Fatal crashes</td></tr>
+          <tr><td>Firebase Performance</td><td>Trace های کلیدی + ANR</td></tr>
+          <tr><td>Custom non-fatals</td><td>همه‌ی <code>AppError</code> به‌صورت <code>recordException</code> گزارش شوند</td></tr>
+          <tr><td>Firebase Analytics</td><td>Screen tracking + Business events</td></tr>
+          <tr><td>Macrobenchmark</td><td>Cold/Warm start + Frame timing</td></tr>
+          <tr><td>ANR Watchdog</td><td>هشدار &gt; ۵s</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p><strong>SLOهای پیشنهادی:</strong></p>
+      <ul>
+        <li>Crash-free users ≥ ۹۹.۵٪</li>
+        <li>ANR rate ≤ ۰.۲٪</li>
+        <li>p95 cold start ≤ ۱.۵s</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §14 -->
+    <section id="sec-14">
+      <h2>۱۴. Security Stack</h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>کنترل</th><th>پیاده‌سازی</th></tr></thead>
+        <tbody>
+          <tr><td>Token Storage</td><td>Encrypted DataStore در <code>:core:datastore</code></td></tr>
+          <tr><td>Token Refresh</td><td><code>TokenAuthenticator</code> در <code>:core:network</code> (متمرکز، Single-flight با Mutex)</td></tr>
+          <tr><td>Cert Pinning</td><td>OkHttp <code>CertificatePinner</code> در <code>:core:network</code></td></tr>
+          <tr><td>App Integrity</td><td>Play Integrity API + ApiKey rotation</td></tr>
+          <tr><td>Code Obfuscation</td><td>R8 full mode در release</td></tr>
+          <tr><td>Logging</td><td>فقط در DEBUG با sanitization (هرگز Token در لاگ)</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- §15 -->
+    <section id="sec-15">
+      <h2>۱۵. Feature Rollout &amp; Experimentation</h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>ابزار</th><th>کاربرد</th></tr></thead>
+        <tbody>
+          <tr><td>Firebase Remote Config</td><td>Feature flags + dynamic config</td></tr>
+          <tr><td>A/B Testing</td><td>Firebase A/B Testing</td></tr>
+          <tr><td>Phased Rollout</td><td>Play Console (5% → 20% → 50% → 100%)</td></tr>
+          <tr><td>Kill Switches</td><td>flag در Remote Config برای featureهای حساس</td></tr>
+          <tr><td>Force Update</td><td>endpoint جداگانه + minimum supported version</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>Wrapper در <code>:core:common</code> به‌نام <code>FeatureFlag</code> که از Remote Config تغذیه می‌کند و in-memory cache دارد.</p>
+    </section>
+
+    <hr />
+
+    <!-- §16 -->
+    <section id="sec-16">
+      <h2>۱۶. Build &amp; Tooling</h2>
+
+      <h3>Convention Plugins (<code>:build-logic</code>)</h3>
+      <p>پلاگین‌های مشترک:</p>
+      <ul>
+        <li><code>barex.android.application</code></li>
+        <li><code>barex.android.library</code></li>
+        <li><code>barex.android.feature</code> (شامل compose + hilt + ksp + lifecycle)</li>
+        <li><code>barex.android.library.compose</code></li>
+        <li><code>barex.kotlin.jvm</code> (برای <code>:domain</code>-style ماژول‌ها)</li>
+        <li><code>barex.android.hilt</code></li>
+      </ul>
+      <p>این کار:</p>
+      <ul>
+        <li>یکنواخت‌سازی <code>compileSdk</code>, <code>minSdk</code>, <code>jvmTarget</code>, JavaVersion.</li>
+        <li>جلوگیری از drift نسخه‌ی SDK بین ماژول‌ها (مشکل فعلی پروژه).</li>
+        <li>اضافه‌کردن قواعد به یک‌جا.</li>
+      </ul>
+
+      <h3>Version Catalog</h3>
+      <p>ادامه‌ی <code>libs.versions.toml</code> فعلی، با گروه‌بندی منظم.</p>
+
+      <h3>Gradle features</h3>
+      <ul>
+        <li>Configuration Cache: ON</li>
+        <li>Build Cache: ON</li>
+        <li>Parallel Execution: ON</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §17 -->
+    <section id="sec-17">
+      <h2>۱۷. Testing Strategy — فقط Konsist (تست‌های معماری)</h2>
+      <blockquote>
+        <p>به‌دلیل کمبود وقت، تنها لایه‌ی تست <strong>ضروری</strong> در فاز اول، <strong>Konsist</strong> است (تست‌های ساختاری/معماری). تست‌های واحد، یکپارچه، UI، E2E و Performance در فازهای بعد به‌تدریج اضافه خواهند شد و در این پلن خارج از scope هستند.</p>
+      </blockquote>
+
+      <h3>۱۷.۱ هدف</h3>
+      <ul>
+        <li><strong>یونیت تست برای معماری</strong>: قواعد ساختاری به‌جای README، در CI اجرا می‌شوند.</li>
+        <li>جلوگیری از <strong>drift معماری</strong> در طول زمان (به‌خصوص در رشد تیم).</li>
+        <li>مرز ماژول‌ها در زمان CI گارد می‌شود.</li>
+        <li>هزینه‌ی نگهداری بسیار پایین (۲–۳ روز نوشتن، عمر طولانی).</li>
+      </ul>
+
+      <h3>۱۷.۲ محل قرارگیری</h3>
+      <ul>
+        <li>ماژول جداگانه: <code>:konsist-test</code>
+          <ul>
+            <li>وابسته به: تمام ماژول‌های <code>:core:*</code>, <code>:shared-kernel</code>, <code>:feature:*</code>.</li>
+            <li>فقط <code>testImplementation("com.lemonappdev:konsist:&lt;version&gt;")</code>.</li>
+          </ul>
+        </li>
+        <li>اجرا: <code>./gradlew :konsist-test:test</code></li>
+        <li>اتصال به CI: gate قبل از merge.</li>
+      </ul>
+
+      <h3>۱۷.۳ مجموعه‌ی قواعد (در فاز ۱)</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>قاعده</th><th>پیغام شکست</th></tr></thead>
+        <tbody>
+          <tr><td>۱</td><td><code>*ViewModel</code> نباید به <code>*Repository</code> وابسته باشد</td><td><code>Use UseCase instead of Repository in ViewModel</code></td></tr>
+          <tr><td>۲</td><td>فقط <code>:core:network</code> و <code>:data</code> ماژول‌ها می‌توانند <code>okhttp3.*</code> و <code>retrofit2.*</code> را import کنند</td><td><code>Networking only allowed in :core:network</code></td></tr>
+          <tr><td>۳</td><td><code>:shared-kernel</code> و سایر ماژول‌های هم‌نوع <code>:domain</code> نباید به <code>android.*</code> وابسته باشند</td><td><code>Keep domain pure JVM</code></td></tr>
+          <tr><td>۴</td><td>Feature به Feature ممنوع (هیچ <code>:feature:*</code> نباید feature دیگر را import کند)</td><td><code>Cross-feature dependency forbidden</code></td></tr>
+          <tr><td>۵</td><td><code>*RepositoryImpl</code> فقط در لایه‌ی data یک feature تعریف شود</td><td><code>RepositoryImpl must live in feature data layer</code></td></tr>
+          <tr><td>۶</td><td><code>*RepositoryImpl</code> فقط از طریق <code>safeApiCall</code> با <code>Api</code> ارتباط بگیرد (نه فراخوانی مستقیم <code>api.xxx()</code>)</td><td><code>Direct api.* call without safeApiCall is forbidden</code></td></tr>
+          <tr><td>۷</td><td><code>safeApiCall</code> فقط در <code>:core:network</code> تعریف شود</td><td><code>safeApiCall must reside in :core:network</code></td></tr>
+          <tr><td>۸</td><td><code>*Repository*</code> نباید <code>HttpException</code> یا <code>IOException</code> را catch کند</td><td><code>Catching network exceptions in Repository is forbidden — use safeApiCall</code></td></tr>
+          <tr><td>۹</td><td>Composable نباید <code>*Repository</code> یا <code>*UseCase</code> تزریق کند</td><td><code>Inject through ViewModel only</code></td></tr>
+          <tr><td>۱۰</td><td>هر <code>*ViewModel</code> فقط یک property از نوع <code>StateFlow&lt;*UiState&gt;</code> بیرون بدهد</td><td><code>Single UiState per ViewModel (UDF MVVM)</code></td></tr>
+          <tr><td>۱۱</td><td>هیچ ماژولی نباید <code>MutableLiveData</code>/<code>LiveData</code> import کند</td><td><code>Use StateFlow instead of LiveData</code></td></tr>
+          <tr><td>۱۲</td><td>فایل ≤ ۶۰۰ خط، Composable ≤ ۴۰۰ خط (با Detekt تکمیلی)</td><td><code>Split large files</code></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <h3>۱۷.۴ اجرا در CI</h3>
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+    PR[Pull Request] --> Build[./gradlew assembleDebug]
+    Build --> Konsist[./gradlew konsistTest:test]
+    Konsist -->|"pass"| Merge[Merge allowed]
+    Konsist -->|"fail"| Block[Block merge + show violations]
+</pre>
+      </div>
+      <ul>
+        <li>یک GitHub Action / GitLab CI step ساده.</li>
+        <li>زمان اجرا &lt; ۳۰ ثانیه برای کل قواعد.</li>
+        <li>خروجی JUnit-XML قابل نمایش در PR comments.</li>
+      </ul>
+
+      <h3>۱۷.۵ بقیه‌ی لایه‌های تست — خارج از scope فاز ۱</h3>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>لایه</th><th>وضعیت در پلن</th><th>زمان اضافه‌شدن</th></tr></thead>
+        <tbody>
+          <tr><td>Domain (UseCase) JUnit</td><td>تست‌های موجود حفظ شود، توسعه متوقف</td><td>فاز ۲</td></tr>
+          <tr><td>Data (Repository) با MockWebServer</td><td>بعد از شکستن <code>:data</code> معنادار می‌شود</td><td>فاز ۳</td></tr>
+          <tr><td>ViewModel با Turbine</td><td>بعد از مهاجرت به تک UiState</td><td>فاز ۳–۴</td></tr>
+          <tr><td>Compose UI Test</td><td>smoke فقط روی مسیرهای بحرانی</td><td>فاز ۵</td></tr>
+          <tr><td>Maestro E2E</td><td>۳ مسیر طلایی</td><td>فاز ۶</td></tr>
+          <tr><td>Macrobenchmark + Baseline Profile</td><td>همراه فاز ۵</td><td>فاز ۵</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <blockquote>
+        <p>این لایه‌ها در پلن <strong>اشاره</strong> می‌شوند ولی <strong>اجبار</strong> ندارند. اولویت: ابتدا Konsist، سپس بقیه به‌ترتیب فاز.</p>
+      </blockquote>
+    </section>
+
+    <hr />
+
+    <!-- §18 -->
+    <section id="sec-18">
+      <h2>۱۸. Anti-patterns ممنوع</h2>
+      <ul>
+        <li><span class="cross">✕</span> ViewModel که Repository تزریق می‌کند (به جای UseCase)</li>
+        <li><span class="cross">✕</span> بیش از یک <code>MutableStateFlow</code> در یک ViewModel برای state صفحه</li>
+        <li><span class="cross">✕</span> <code>MutableLiveData</code> (کلاً LiveData حذف)</li>
+        <li><span class="cross">✕</span> Composable که Repository یا UseCase تزریق می‌کند (الان در <code>ReportViolationScreen.kt</code> وجود دارد)</li>
+        <li><span class="cross">✕</span> Feature که feature دیگر را import می‌کند</li>
+        <li><span class="cross">✕</span> ساخت OkHttp/Retrofit/Interceptor بیرون از <code>:core:network</code></li>
+        <li><span class="cross">✕</span> ساخت Room Database بیرون از <code>:core:database</code></li>
+        <li><span class="cross">✕</span> افزودن Room به featureهای جدید بدون پیروی از الگوی پایلوت <code>:feature:calls</code></li>
+        <li><span class="cross">✕</span> فراخوانی مستقیم <code>api.xxx()</code> در Repository بدون عبور از <code>safeApiCall</code></li>
+        <li><span class="cross">✕</span> <code>try/catch</code> روی <code>HttpException</code> یا <code>IOException</code> در Repository (مدیریت متمرکز در <code>safeApiCall</code>)</li>
+        <li><span class="cross">✕</span> Parse دستی <code>errorBody</code> در Repository (با <code>ApiErrorParser</code> متمرکز)</li>
+        <li><span class="cross">✕</span> کلاس Public بدون نیاز در ماژول feature</li>
+        <li><span class="cross">✕</span> فایل &gt; ۶۰۰ خط یا Composable &gt; ۴۰۰ خط</li>
+        <li><span class="cross">✕</span> Domain که به <code>android.*</code> وابسته شود</li>
+        <li><span class="cross">✕</span> Mixed source set (<code>src/main/java/</code> + <code>src/main/kotlin/</code> در یک ماژول)</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <!-- §19 -->
+    <section id="sec-19">
+      <h2>۱۹. روشن کردن گم‌ها (نسبت به وضعیت فعلی پروژه)</h2>
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>آیتم</th><th>وضعیت فعلی</th><th>معماری هدف</th></tr></thead>
+        <tbody>
+          <tr><td><code>:data</code> غول‌پیکر</td><td>یک ماژول با ~۲۰ Repo</td><td>حذف؛ هر feature data خودش را دارد</td></tr>
+          <tr><td><code>:domain</code> متمرکز</td><td>یک ماژول با همه‌ی UseCase</td><td>حذف؛ هر feature domain خودش را دارد + <code>:shared-kernel</code> نازک</td></tr>
+          <tr><td><code>feature-list</code> با ۷۸ فایل</td><td>God module</td><td>شکستن به ۷ ماژول feature</td></tr>
+          <tr><td>God Files (3000+ خط)</td><td>چندین فایل</td><td>شکستن به Composableهای کوچک</td></tr>
+          <tr><td>ViewModel با Repository</td><td>چندین جا</td><td>اجبار UseCase با Konsist</td></tr>
+          <tr><td><code>core:network</code> در feature-auth</td><td>leak</td><td>حذف وابستگی</td></tr>
+          <tr><td><code>compileSdk</code> ناهمگون</td><td>34 و 35 ترکیب</td><td>یک‌سان با Convention Plugin</td></tr>
+          <tr><td><code>domain/src/main/java</code></td><td>ترکیب با kotlin</td><td>همه به kotlin</td></tr>
+          <tr><td>MVVM با چند StateFlow</td><td>پراکنده در VMها</td><td>تک UiState یکپارچه</td></tr>
+          <tr><td>Room</td><td>اسکلت dead code (<code>ItemEntity</code> بدون مصرف)</td><td>پایلوت کامل فقط در <code>:feature:calls</code> (الگوی مرجع برای featureهای آینده)</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- §20 -->
+    <section id="sec-20">
+      <h2>۲۰. Roadmap (نقشه‌ی اجرایی ۶ فاز)</h2>
+      <blockquote>
+        <p>این فقط نقشه است؛ اجرای آن جداگانه و در آینده انجام می‌شود.</p>
+      </blockquote>
+
+      <div class="mermaid-wrap">
+<pre class="mermaid">
+gantt
+    title Refactor Roadmap
+    dateFormat YYYY-MM-DD
+    section Phase 1
+    Foundation         :p1, 2026-05-01, 14d
+    section Phase 2
+    Enforce UseCase    :p2, after p1, 7d
+    section Phase 3
+    Split feature-list :p3, after p2, 28d
+    section Phase 4
+    Break god files    :p4, after p2, 28d
+    section Phase 5
+    Offline-first + Obs:p5, after p3, 21d
+    section Phase 6
+    Scale + Security   :p6, after p5, 14d
+</pre>
+      </div>
+
+      <div class="table-wrap">
+      <table>
+        <thead><tr><th>فاز</th><th>مدت</th><th>محتوا</th></tr></thead>
+        <tbody>
+          <tr><td>۱</td><td>۲ هفته</td><td><code>:build-logic</code>, یک‌سان‌سازی <code>compileSdk</code>, <strong>ماژول <code>:konsist-test</code> با ۱۲ قاعده در CI</strong>, Detekt برای اندازه‌ی فایل, حذف dead code</td></tr>
+          <tr><td>۲</td><td>۱ هفته</td><td>اجبار <code>ViewModel → UseCase</code> (با Konsist رولینگ‌شده) در همه‌ی ViewModelها</td></tr>
+          <tr><td>۳</td><td>۳-۴ هفته</td><td>شکستن <code>feature-list</code> به ۷ ماژول مستقل</td></tr>
+          <tr><td>۴</td><td>۲-۳ هفته</td><td>شکستن God Files (موازی با فاز ۳)</td></tr>
+          <tr><td>۵</td><td>۲-۳ هفته</td><td>پیاده‌سازی پایلوت Room فقط در <code>:feature:calls</code> (Paging 3 + RemoteMediator + DAO + RemoteKeys + Mappers) به‌عنوان الگوی مرجع + Baseline Profile + (شروع تست‌های Repository/ViewModel)</td></tr>
+          <tr><td>۶</td><td>۲ هفته</td><td>Remote Config + Feature Flags + Play Integrity + SLO crash-free ≥ ۹۹.۵٪ + Maestro روی ۳ مسیر طلایی</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- §21 -->
+    <section id="sec-21">
+      <h2>۲۱. خلاصه‌ی یک‌خطی</h2>
+      <blockquote>
+        <p><strong>Vertical Slice Clean</strong> + <strong>UDF MVVM با تک UiState</strong> + <strong>Core متمرکز برای Network/DB/DataStore</strong> + <strong><code>safeApiCall</code> به‌عنوان گلوگاه واحد خطای API</strong> + <strong>مرز <code>internal</code> با گارد Konsist</strong> + <strong>Room به‌صورت پایلوت فقط در <code>:feature:calls</code> به‌عنوان الگوی مرجع</strong> + <strong>Observability و Feature Flag</strong> = معماری کم‌ریسک، آماده‌ی مقیاس میلیون کاربر و چند تیم.</p>
+      </blockquote>
+    </section>
+
+    <hr />
+
+    <p style="text-align:center; color:var(--muted); font-size:.85rem; margin-top:32px;">
+      تولید شده از <code>target_architecture_document_26b0f71c.plan.md</code>
+    </p>
+
+  </main>
+</div>
+
+<div class="toolbar">
+  <button id="theme-toggle" type="button">حالت تیره/روشن</button>
+  <button id="print-btn" type="button">پرینت / PDF</button>
+</div>
+
+<script>
+  // theme toggle
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('theme-toggle');
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    root.classList.add('dark');
+  }
+  themeBtn.addEventListener('click', () => {
+    root.classList.toggle('dark');
+    localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+    if (window.mermaidRerender) window.mermaidRerender();
+  });
+
+  // print
+  document.getElementById('print-btn').addEventListener('click', () => window.print());
+</script>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+  function currentTheme() {
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'default';
+  }
+
+  function initMermaid() {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: currentTheme(),
+      flowchart: { htmlLabels: true, curve: 'basis' },
+      securityLevel: 'loose',
+      fontFamily: 'Vazirmatn, Tahoma, sans-serif'
+    });
+  }
+
+  async function render() {
+    initMermaid();
+    const blocks = document.querySelectorAll('pre.mermaid');
+    for (const block of blocks) {
+      const original = block.dataset.original || block.textContent;
+      block.dataset.original = original;
+      const id = 'm' + Math.random().toString(36).slice(2, 9);
+      try {
+        const { svg } = await mermaid.render(id, original);
+        const wrap = document.createElement('div');
+        wrap.className = 'mermaid';
+        wrap.innerHTML = svg;
+        block.replaceWith(wrap);
+      } catch (e) {
+        console.error('mermaid render error', e);
+      }
+    }
+  }
+
+  // expose for theme toggle to re-render
+  window.mermaidRerender = async function () {
+    // restore <pre> nodes from rendered <div> if needed
+    document.querySelectorAll('div.mermaid').forEach(div => {
+      const original = div.getAttribute('data-original');
+      if (original) {
+        const pre = document.createElement('pre');
+        pre.className = 'mermaid';
+        pre.dataset.original = original;
+        pre.textContent = original;
+        div.replaceWith(pre);
+      }
+    });
+    await render();
+  };
+
+  // attach data-original before first render so re-render works
+  document.querySelectorAll('pre.mermaid').forEach(pre => {
+    pre.dataset.original = pre.textContent;
+  });
+
+  render();
+</script>
+
+</body>
+</html>
