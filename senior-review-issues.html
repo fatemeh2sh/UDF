@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>گزارش بازبینی سنیور — پروژه Barex</title>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-code-font@v1.1.2/dist/font-face.css" />
+
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --panel-2: #fbfbfd;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --code-bg: #f3f4f6;
+    --code-text: #0f172a;
+    --table-head: #f3f4f6;
+    --table-row-alt: #fafafa;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.08);
+
+    --crit-bg: #fef2f2;     --crit-fg: #991b1b;     --crit-bd: #fecaca;
+    --high-bg: #fff7ed;     --high-fg: #9a3412;     --high-bd: #fed7aa;
+    --med-bg:  #fefce8;     --med-fg:  #854d0e;     --med-bd:  #fde68a;
+    --low-bg:  #ecfeff;     --low-fg:  #155e75;     --low-bd:  #a5f3fc;
+    --good-bg: #ecfdf5;     --good-fg: #065f46;     --good-bd: #a7f3d0;
+  }
+  html.dark {
+    --bg: #0a0f1c;
+    --panel: #111827;
+    --panel-2: #0f172a;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --border: #1f2937;
+    --accent: #60a5fa;
+    --accent-soft: #1e3a8a;
+    --code-bg: #0b1220;
+    --code-text: #e5e7eb;
+    --table-head: #1f2937;
+    --table-row-alt: #0e162a;
+    --shadow: 0 1px 3px rgba(0,0,0,.4);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,.4);
+
+    --crit-bg: #2a0d10;     --crit-fg: #fca5a5;     --crit-bd: #7f1d1d;
+    --high-bg: #2a1605;     --high-fg: #fdba74;     --high-bd: #7c2d12;
+    --med-bg:  #2a2305;     --med-fg:  #fde68a;     --med-bd:  #78350f;
+    --low-bg:  #052a2a;     --low-fg:  #67e8f9;     --low-bd:  #155e75;
+    --good-bg: #062a1c;     --good-fg: #6ee7b7;     --good-bd: #065f46;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { padding: 0; margin: 0; }
+  body {
+    font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.85;
+    font-size: 15.5px;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, pre, .mono { font-family: 'Vazir Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; direction: ltr; unicode-bidi: embed; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    backdrop-filter: saturate(140%) blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    max-width: 1180px; margin: 0 auto; padding: 10px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand { font-weight: 800; font-size: 16px; }
+  .brand .dot { color: var(--accent); }
+  .topbar .spacer { flex: 1; }
+  .btn {
+    border: 1px solid var(--border); background: var(--panel-2);
+    color: var(--text); padding: 6px 12px; border-radius: 8px;
+    cursor: pointer; font-family: inherit; font-size: 13px;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .container { max-width: 1180px; margin: 24px auto; padding: 0 20px; }
+
+  .hero {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--panel)) 0%, var(--panel) 60%);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px; box-shadow: var(--shadow);
+  }
+  .hero h1 { margin: 0 0 8px 0; font-size: 28px; }
+  .hero .lead { color: var(--muted); margin: 0 0 18px 0; }
+  .hero .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--muted);
+  }
+  .chip.accent { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); background: color-mix(in srgb, var(--accent) 10%, var(--panel-2)); }
+
+  .grid {
+    display: grid; gap: 14px; margin: 18px 0 6px 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+  }
+  .stat .label { color: var(--muted); font-size: 12.5px; }
+  .stat .value { font-size: 22px; font-weight: 800; margin-top: 4px; }
+  .stat.crit .value { color: var(--crit-fg); }
+  .stat.high .value { color: var(--high-fg); }
+  .stat.med .value  { color: var(--med-fg); }
+  .stat.low .value  { color: var(--low-fg); }
+
+  .layout {
+    display: grid; gap: 22px; margin-top: 24px;
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+  @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } }
+
+  nav.toc {
+    position: sticky; top: 70px; align-self: start;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px; box-shadow: var(--shadow); max-height: calc(100vh - 100px); overflow: auto;
+  }
+  nav.toc h3 { margin: 4px 6px 10px 6px; font-size: 13px; color: var(--muted); font-weight: 700; letter-spacing: .02em; }
+  nav.toc a {
+    display: block; padding: 6px 8px; border-radius: 8px; color: var(--text);
+    text-decoration: none; font-size: 13.5px;
+  }
+  nav.toc a:hover { background: var(--accent-soft); color: var(--accent); }
+  nav.toc a .num { color: var(--muted); margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+  section.card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 22px 8px 22px; box-shadow: var(--shadow); margin-bottom: 22px;
+    scroll-margin-top: 80px;
+  }
+  section.card h2 { margin: 0 0 6px 0; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+  section.card .desc { color: var(--muted); margin: 0 0 14px 0; }
+
+  .issue {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin: 12px 0; background: var(--panel-2);
+  }
+  .issue .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .issue .id   { font-family: 'Vazir Code', monospace; color: var(--muted); font-size: 12px; }
+  .issue .title { font-weight: 700; font-size: 15.5px; }
+  .issue .body  { margin-top: 8px; }
+  .issue .body p { margin: 6px 0; }
+  .issue ul { margin: 6px 0 6px 0; padding-inline-start: 22px; }
+  .issue li { margin: 3px 0; }
+
+  .sev { font-size: 11.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px; border: 1px solid; letter-spacing: .02em; }
+  .sev.crit { background: var(--crit-bg); color: var(--crit-fg); border-color: var(--crit-bd); }
+  .sev.high { background: var(--high-bg); color: var(--high-fg); border-color: var(--high-bd); }
+  .sev.med  { background: var(--med-bg);  color: var(--med-fg);  border-color: var(--med-bd); }
+  .sev.low  { background: var(--low-bg);  color: var(--low-fg);  border-color: var(--low-bd); }
+  .sev.good { background: var(--good-bg); color: var(--good-fg); border-color: var(--good-bd); }
+
+  .file {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--code-bg); color: var(--code-text);
+    padding: 1px 7px; border-radius: 6px; font-size: 12.5px;
+    font-family: 'Vazir Code', monospace; direction: ltr; unicode-bidi: embed;
+  }
+
+  pre.code {
+    background: var(--code-bg); color: var(--code-text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; overflow: auto; font-size: 13px; line-height: 1.65;
+    margin: 10px 0;
+  }
+  pre.code .bad  { color: #ef4444; }
+  pre.code .good { color: #16a34a; }
+
+  .fix {
+    background: color-mix(in srgb, var(--good-fg) 6%, var(--panel));
+    border-inline-start: 3px solid var(--good-fg);
+    padding: 10px 12px; border-radius: 8px; margin-top: 8px;
+  }
+  .fix .label { font-weight: 800; color: var(--good-fg); margin-inline-end: 8px; }
+
+  table.kv {
+    width: 100%; border-collapse: collapse; margin: 6px 0;
+  }
+  table.kv th, table.kv td {
+    padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: right; vertical-align: top;
+  }
+  table.kv th { background: var(--table-head); font-weight: 700; font-size: 13px; }
+  table.kv tr:nth-child(even) td { background: var(--table-row-alt); }
+  table.kv td.mono { font-family: 'Vazir Code', monospace; direction: ltr; unicode-bidi: embed; font-size: 13px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+  footer {
+    text-align: center; color: var(--muted); padding: 28px 0; font-size: 13px;
+  }
+  .anchor::before { content: "#"; color: var(--muted); margin-inline-end: 6px; }
+  hr.soft { border: 0; height: 1px; background: var(--border); margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">گزارش بازبینی <span class="dot">سنیور</span> — Barex</div>
+    <span class="chip">۰۵/۲ /۲۰۲۶</span>
+    <div class="spacer"></div>
+    <button class="btn" id="themeToggle">حالت تیره/روشن</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="hero">
+    <h1>بازبینی کامل پروژه از منظر یک Senior Android Engineer</h1>
+    <p class="lead">
+      این سند یک ممیزی فنی کامل از کل ساختار پروژه‌ی <b>Barex</b> است: معماری، ماژول‌بندی، شبکه، state، Compose، امنیت، Build، تست‌پذیری و Hygiene.
+      هر یافته شامل: دلیل اشکال، محل دقیق در کد و راه‌حل پیشنهادی هم‌راستا با سند معماری هدف <span class="mono">target_architecture_document_26b0f71c.plan.md</span> است.
+    </p>
+
+    <div class="meta">
+      <span class="chip accent">۹ ماژول Gradle</span>
+      <span class="chip">۳۷۵ فایل Kotlin</span>
+      <span class="chip">۲ فایل Java باقی‌مانده</span>
+      <span class="chip">بزرگ‌ترین فایل: <b class="mono">۳۱۷۱ خط</b></span>
+      <span class="chip">۲۱ Repository با <span class="mono">try/catch</span></span>
+      <span class="chip">صفر <span class="mono">safeApiCall</span></span>
+    </div>
+
+    <div class="grid">
+      <div class="stat crit"><div class="label">بحرانی (Critical)</div><div class="value">۹</div></div>
+      <div class="stat high"><div class="label">پراولویت (High)</div><div class="value">۲۲</div></div>
+      <div class="stat med"><div class="label">متوسط (Medium)</div><div class="value">۲۰</div></div>
+      <div class="stat low"><div class="label">سبک (Low / Hygiene)</div><div class="value">۱۲</div></div>
+    </div>
+
+    <div class="legend" style="margin-top:14px">
+      <span class="sev crit">Critical</span>
+      <span class="sev high">High</span>
+      <span class="sev med">Medium</span>
+      <span class="sev low">Low</span>
+      <span class="sev good">نکته‌ی مثبت</span>
+    </div>
+  </section>
+
+  <div class="layout">
+    <nav class="toc" id="toc">
+      <h3>فهرست بخش‌ها</h3>
+      <a href="#exec"><span class="num">00</span> خلاصه‌ی اجرایی</a>
+      <a href="#sec-A"><span class="num">A</span> ساختار ماژول‌ها</a>
+      <a href="#sec-B"><span class="num">B</span> Build &amp; Versions</a>
+      <a href="#sec-C"><span class="num">C</span> شبکه &amp; خطا</a>
+      <a href="#sec-D"><span class="num">D</span> MVVM &amp; UiState</a>
+      <a href="#sec-E"><span class="num">E</span> Compose / UI</a>
+      <a href="#sec-F"><span class="num">F</span> Source Set &amp; نام‌گذاری</a>
+      <a href="#sec-G"><span class="num">G</span> Repository / Data</a>
+      <a href="#sec-H"><span class="num">H</span> Database (Room)</a>
+      <a href="#sec-I"><span class="num">I</span> DataStore &amp; Token</a>
+      <a href="#sec-J"><span class="num">J</span> DI / Hilt</a>
+      <a href="#sec-K"><span class="num">K</span> Hygiene / Repo</a>
+      <a href="#sec-L"><span class="num">L</span> Manifest / Permissions</a>
+      <a href="#sec-M"><span class="num">M</span> Coroutines &amp; Concurrency</a>
+      <a href="#sec-N"><span class="num">N</span> Testing &amp; CI</a>
+      <a href="#sec-O"><span class="num">O</span> Performance / R8</a>
+      <a href="#sec-P"><span class="num">P</span> Logging &amp; Observability</a>
+      <a href="#sec-Q"><span class="num">Q</span> کدهای نیمه‌کاره / Dead Code</a>
+      <a href="#roadmap"><span class="num">→</span> ترتیب پیشنهادی رفع</a>
+    </nav>
+
+    <div>
+
+<!-- ============ EXECUTIVE SUMMARY ============ -->
+<section id="exec" class="card">
+  <h2><span class="anchor"></span>خلاصه‌ی اجرایی</h2>
+  <p class="desc">سه ریسکی که اگر فردا پروژه به Production میلیون‌کاربر می‌رفت، فوراً می‌سوزاند.</p>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">۱) لیک توکن دسترسی در لاگ‌ها</span><span class="id">EXEC-1</span></div>
+    <div class="body">
+      <p>در <span class="file">core/network/src/main/java/com/bt/barex/core/network/AuthInterceptor.kt:36</span> توکن Bearer به‌صورت plain به Logcat نوشته می‌شود:</p>
+      <pre class="code"><span class="bad">Log.d("tokens", initialToken)</span>     // اجرا در DEBUG، اما dev/stag هم DEBUG هستند</pre>
+      <p>هر اپلیکیشن دیگری روی دستگاه (یا یک abuse از <span class="mono">adb logcat</span>) می‌تواند توکن را بخواند. در ترکیب با <span class="mono">HttpLoggingInterceptor.Level.BODY</span>، کل بدنه‌ی API (شامل OTP, نام و کد ملی) لاگ می‌شود.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> این خط حذف شود. در پلاگین Logging، interceptorِ <span class="mono">redactHeader("Authorization")</span> اضافه شود. اگر نیاز به مشاهده توکن در زمان توسعه است، فقط ۸ کاراکتر اول/آخر چاپ شود.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">۲) ماژول <span class="mono">:support</span> در settings ثبت شده اما پوشه‌ای وجود ندارد</span><span class="id">EXEC-2</span></div>
+    <div class="body">
+      <p>در <span class="file">settings.gradle.kts:52</span> این خط هست: <code class="mono">include(":support")</code>، اما در روت پروژه پوشه‌ی <span class="mono">support/</span> اصلاً وجود ندارد. این یعنی Sync بسته به محیط یا warning می‌دهد یا fail می‌کند، و در CI یک «pipeline قرمز» همیشگی است.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> یا خط حذف شود، یا ماژول واقعاً ساخته شود. اگر اصلاً قرار نیست استفاده شود، الان حذف.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">۳) شکست بیلد روی فایل‌سیستم Case-sensitive (Linux/CI)</span><span class="id">EXEC-3</span></div>
+    <div class="body">
+      <p>پوشه‌ی فیزیکی <span class="file">feature-list/src/main/java/com/bt/barex/feature/list/myCalls/</span> با حرف <b>C</b> بزرگ، اما همه‌ی فایل‌های داخلش <code class="mono">package com.bt.barex.feature.list.mycalls</code> با <b>c</b> کوچک تعریف کرده‌اند. روی Windows کار می‌کند، روی Linux/macOS-CI ساخت feature-list شکست می‌خورد یا کلاس‌ها resolve نمی‌شوند.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> یا پوشه به <span class="mono">mycalls</span> rename شود، یا package به <span class="mono">myCalls</span> (انتخاب اول مطابق <span class="mono">09-naming-and-conventions</span>).</div>
+    </div>
+  </div>
+
+  <hr class="soft">
+  <p>چهار ریسک ساختاری اصلی که هرکدام به‌تنهایی پروژه را در ۶ ماه آینده غیرقابل توسعه می‌کنند:</p>
+  <ul>
+    <li><b>God Files:</b> <span class="file">AccountScreen.kt = 3171 خط</span>، <span class="file">ListScreen.kt = 2720</span>، <span class="file">CargoAroundMe.kt = 2668</span>، <span class="file">VehicleInfoScreen.kt = 1918</span> — حد قاعده ۶۰۰ خط است.</li>
+    <li><b>God Modules:</b> <span class="mono">:feature-list</span> ۷ feature را در یک ماژول جا داده، <span class="mono">:data</span> همه Repositoryها را، <span class="mono">:domain</span> همه‌ی UseCaseها را.</li>
+    <li><b>هیچ <span class="mono">safeApiCall</span> وجود ندارد:</b> ۲۱ فایل Repository دستی <span class="mono">try/catch</span> روی <span class="mono">HttpException</span> و <span class="mono">Throwable</span> دارند و دستی <span class="mono">errorBody().string()</span> را parse می‌کنند.</li>
+    <li><b>وابستگی feature به feature:</b> <span class="mono">:feature-list → :feature-auth</span> و <span class="mono">:feature-list → :feature-upload</span> و <span class="mono">:feature-upload → :data</span>.</li>
+  </ul>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- A. MODULE STRUCTURE                                                 -->
+<!-- =================================================================== -->
+<section id="sec-A" class="card">
+  <h2><span class="anchor"></span>A. ساختار ماژول‌ها &amp; مرز‌ها</h2>
+  <p class="desc">معماری فعلی برخلاف Vertical Slice Clean در پلن، یک «layer-based» قدیمی است با چند God Module.</p>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">A1. ماژول <span class="mono">:support</span> در settings هست ولی پوشه نیست</span><span class="id">A1</span></div>
+    <div class="body">
+      <p>همانطور که در خلاصه گفته شد. <span class="file">settings.gradle.kts:52</span></p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">A2. وابستگی Feature به Feature (ممنوع طبق <span class="mono">05-module-boundaries</span>)</span><span class="id">A2</span></div>
+    <div class="body">
+      <ul>
+        <li><span class="file">feature-list/build.gradle.kts:42</span> &nbsp; <code class="mono">implementation(project(":feature-auth"))</code></li>
+        <li><span class="file">feature-list/build.gradle.kts:41</span> &nbsp; <code class="mono">implementation(project(":feature-upload"))</code></li>
+        <li><span class="file">feature-upload/build.gradle.kts:27</span> &nbsp; <code class="mono">implementation(project(":data"))</code> &mdash; مدل God-data را وارد می‌کند</li>
+      </ul>
+      <div class="fix"><span class="label">راه‌حل:</span> هر تعامل cross-feature باید از طریق <span class="mono">FeatureEntry</span> در <span class="mono">:core:navigation</span> باشد. مدل‌های مشترک به <span class="mono">:shared-kernel</span> منتقل شوند.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">A3. <span class="mono">:feature-list</span> یک «God Module» با ۷+ feature درون آن</span><span class="id">A3</span></div>
+    <div class="body">
+      <p>۷۸ فایل Kotlin در <span class="mono">feature-list/</span>؛ شامل sub-packageهای: <span class="mono">account</span> (با KYC داخلش)، <span class="mono">myloads</span>، <span class="mono">myCalls</span>، <span class="mono">createcargo</span>، <span class="mono">priceinquiry</span>، <span class="mono">waybill</span>، <span class="mono">navigation</span>، <span class="mono">datastore</span>، Home (ListScreen)، CargoAroundMe.</p>
+      <div class="fix"><span class="label">راه‌حل (مطابق پلن §۲۰ فاز ۳):</span> شکستن به <span class="mono">:feature:home</span>، <span class="mono">:feature:myloads</span>، <span class="mono">:feature:calls</span>، <span class="mono">:feature:createcargo</span>، <span class="mono">:feature:waybill</span>، <span class="mono">:feature:priceinquiry</span>، <span class="mono">:feature:account</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">A4. <span class="mono">:data</span> و <span class="mono">:domain</span> مونولیتیک (لایه‌محور به‌جای feature-محور)</span><span class="id">A4</span></div>
+    <div class="body">
+      <p>ماژول <span class="mono">:data</span> ~۲۰ <span class="mono">RepositoryImpl</span> از همه‌ی featureها را در خود دارد و <span class="mono">:domain</span> همه‌ی UseCaseها را. هر تغییر کوچک یعنی recompile کل ماژول و invalidate Build Cache. این الگو در پلن <b>صریحاً</b> «حذف» علامت خورده (§۱۹).</p>
+      <div class="fix"><span class="label">راه‌حل:</span> Vertical Slice — هر <span class="mono">:feature:&lt;name&gt;</span> داخل خودش <span class="mono">data/</span> + <span class="mono">domain/</span> + <span class="mono">presentation/</span> + <span class="mono">ui/</span> دارد. <span class="mono">:shared-kernel</span> فقط <span class="mono">User, Session, Result, AppError, Coordinates</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">A5. <span class="mono">:core:common</span> یک «God Core» شده</span><span class="id">A5</span></div>
+    <div class="body">
+      <p>زیرپوشه‌های <span class="mono">analytics/</span>، <span class="mono">navigation/</span>، <span class="mono">theme/</span>، <span class="mono">ui/</span>، <span class="mono">json/</span>، <span class="mono">Utils/</span>، <span class="mono">connectivity/</span> همه در یک ماژول. این یعنی هر تغییر در رنگ تم → recompile لایه‌ی navigation هم.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> طبق پلن §۳.۱ تجزیه به: <span class="mono">:core:designsystem</span> (theme/colors)، <span class="mono">:core:ui</span> (Composable مشترک)، <span class="mono">:core:navigation</span>، <span class="mono">:core:analytics</span>، <span class="mono">:core:common</span> (فقط Result/Dispatchers/Extensions).</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">A6. عدم وجود <span class="mono">:build-logic</span> (Convention Plugins)</span><span class="id">A6</span></div>
+    <div class="body">
+      <p>هر ماژول <span class="mono">build.gradle.kts</span> خودش را دارد و باعث drift شده (به بخش B مراجعه کن). هیچ Convention Plugin مشترکی برای <span class="mono">android.library</span>+Compose+Hilt وجود ندارد.</p>
+      <div class="fix"><span class="label">راه‌حل (پلن §۱۶):</span> ماژول <span class="mono">:build-logic</span> با plugin هایی مثل <span class="mono">barex.android.feature</span>، <span class="mono">barex.android.library.compose</span>، <span class="mono">barex.android.hilt</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">A7. عدم وجود <span class="mono">:shared-kernel</span></span><span class="id">A7</span></div>
+    <div class="body">
+      <p>مدل‌های مشترک (<span class="mono">User</span>, <span class="mono">Result</span>, <span class="mono">AppError</span>) همگی در <span class="mono">:domain</span> هستند. به محض شروع شکستن feature-by-feature، باید این مدل‌ها به <span class="mono">:shared-kernel</span> منتقل شوند.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">A8. نام‌گذاری ماژول‌ها با dash به‌جای colon (<span class="mono">:feature-auth</span> در برابر <span class="mono">:feature:auth</span>)</span><span class="id">A8</span></div>
+    <div class="body">
+      <p>پلن از naming نوع <span class="mono">:feature:auth</span> استفاده می‌کند که خوانایی و گروه‌بندی بهتری در Studio می‌دهد. الان <span class="mono">:feature-auth</span>, <span class="mono">:feature-list</span>, <span class="mono">:feature-upload</span>, <span class="mono">:feature-location</span> هستند.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> هنگام refactor به Vertical Slice، یکجا rename + بروزرسانی <span class="mono">project(":...")</span> ها.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev good">نکته‌ی مثبت</span><span class="title">‪+‬ ماژول‌بندی پایه‌ای انجام شده</span><span class="id">A+</span></div>
+    <div class="body">
+      <p>وجود <span class="mono">:core:network</span>، <span class="mono">:core:database</span>، <span class="mono">:core:datastore</span>، <span class="mono">:core:notifications</span> نشان‌دهنده‌ی این است که تیم جهت‌گیری معماری را می‌فهمد. مرحله‌ی بعد فقط درست تجزیه کردن featureها است.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- B. BUILD & VERSIONS                                                 -->
+<!-- =================================================================== -->
+<section id="sec-B" class="card">
+  <h2><span class="anchor"></span>B. Build &amp; مدیریت نسخه</h2>
+  <p class="desc">drift نسخه و تنظیمات آنرسرتیفاید — منشأ بسیاری از باگ‌های runtime.</p>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">B1. <span class="mono">compileSdk</span> ناهمگون بین ماژول‌ها</span><span class="id">B1</span></div>
+    <div class="body">
+      <table class="kv">
+        <tr><th>ماژول</th><th>compileSdk</th></tr>
+        <tr><td><span class="mono">:app</span></td><td class="mono">35</td></tr>
+        <tr><td><span class="mono">:core:common</span></td><td class="mono">34</td></tr>
+        <tr><td><span class="mono">:core:database</span></td><td class="mono">34</td></tr>
+        <tr><td><span class="mono">:core:datastore</span></td><td class="mono">34</td></tr>
+        <tr><td><span class="mono">:core:network</span></td><td class="mono">34 (ضمنی)</td></tr>
+        <tr><td><span class="mono">:data</span></td><td class="mono">34</td></tr>
+        <tr><td><span class="mono">:feature-auth</span></td><td class="mono">34</td></tr>
+        <tr><td><span class="mono">:feature-list</span></td><td class="mono">34</td></tr>
+        <tr><td><span class="mono">:feature-upload</span></td><td class="mono">34</td></tr>
+        <tr><td><span class="mono">:feature-location</span></td><td class="mono">34</td></tr>
+      </table>
+      <p>این یعنی APIهای جدید SDK 35 (مثل Predictive Back، Window Insets جدید، Behavior تغییریافته‌ی Notification) فقط در <span class="mono">:app</span> مرئی هستند ولی Composableها در featureها از آن‌ها استفاده می‌کنند → ریسک crash در runtime.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> Convention Plugin در <span class="mono">:build-logic</span> یک‌جا <span class="mono">compileSdk = 35</span> و <span class="mono">targetSdk = 35</span> تعیین کند.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">B2. تعریف دوگانه‌ی Material3 با دو نسخه‌ی متفاوت</span><span class="id">B2</span></div>
+    <div class="body">
+      <p>در <span class="file">gradle/libs.versions.toml</span>:</p>
+      <pre class="code">material3        = "1.3.1"   # خط 11
+material3Version = "1.4.0"   # خط 54
+
+compose-material3 = { ... version.ref = "material3" }       # 1.3.1
+material3         = { ... version.ref = "material3Version" } # 1.4.0</pre>
+      <p>دو alias متفاوت برای یک کتابخانه با دو نسخه‌ی ناهماهنگ. در <span class="file">app/build.gradle.kts</span> اولی import می‌شود ولی در <span class="file">feature-list/build.gradle.kts:47</span> دومی هم اضافه شده. Gradle نسخه‌ی بزرگ‌تر را resolve می‌کند، اما این gotcha خطرناکی است.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> یک نسخه‌ی واحد، حذف <span class="mono">material3Version</span> و <span class="mono">material3</span> alias.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">B3. ناسازگاری نسخه‌های Paging</span><span class="id">B3</span></div>
+    <div class="body">
+      <p><span class="mono">paging = "3.3.5"</span> ولی <span class="mono">pagingCommonAndroid = "3.3.6"</span>. ساب‌ماژول‌های Paging باید همگی hexa-version یکسان داشته باشند.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">B4. کتابخانه‌ی Security در نسخه‌ی Alpha (ساله) و Deprecated APIs</span><span class="id">B4</span></div>
+    <div class="body">
+      <p><span class="mono">security-crypto = "1.1.0-alpha06"</span> از سال‌ها قبل alpha مانده. در عین حال در <span class="file">core/datastore/src/main/java/com/bt/barex/core/datastore/TokenStorage.kt</span> از <span class="mono">EncryptedSharedPreferences</span> و <span class="mono">MasterKeys.AES256_GCM_SPEC</span> (هر دو deprecated) استفاده شده.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> مهاجرت به <span class="mono">androidx.security:security-crypto-ktx 1.1.0-stable</span> یا جایگزینی با <span class="mono">EncryptedDataStore</span> (پیشنهاد پلن §۳.۱ <span class="mono">:core:datastore</span>) با <span class="mono">MasterKey.Builder(...)</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">B5. AGP و Compose BOM قدیمی‌تر از حد امروز</span><span class="id">B5</span></div>
+    <div class="body">
+      <p><span class="mono">agp = "8.6.0"</span> &nbsp; <span class="mono">compose-bom = "2024.12.01"</span> &nbsp; <span class="mono">coroutines = "1.9.0"</span>. در ۲۰۲۶ این‌ها باید بازنگری شوند (Compose BOM 2025.x، AGP 8.8+، Coroutines 1.10+).</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">B6. تنظیمات Gradle به یک ماشین خاص هاردکد شده</span><span class="id">B6</span></div>
+    <div class="body">
+      <p><span class="file">gradle.properties</span>: <span class="mono">-Xmx6g</span>، <span class="mono">workers.max=4</span>. روی ماشین CI با ۲گیگ RAM این OOM می‌گیرد و روی dev با ۳۲گیگ RAM زیر-استفاده می‌شود.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> قابل override با env variable، یا حذف workers.max و واگذاری به Gradle.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">B7. <span class="mono">configuration-cache.problems=warn</span> به‌جای <span class="mono">fail</span></span><span class="id">B7</span></div>
+    <div class="body">
+      <p>یعنی هر کسی می‌تواند یک <span class="mono">Project.getName()</span> در <span class="mono">configuration-time</span> تزریق کند بدون اینکه CI fail شود → invalidate دائمی Configuration Cache.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">B8. کامنت‌های Persian خراب در <span class="mono">gradle.properties</span></span><span class="id">B8</span></div>
+    <div class="body">
+      <p>خط ۱: <span class="mono"># ???? ???? ?????</span> — encoding خراب. <span class="mono">java.util.Properties</span> فقط ISO-8859-1 می‌خواند، Persian باید \uXXXX escape شود یا کامنت‌ها انگلیسی شوند.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">B9. <span class="mono">deprecated</span> استفاده از <span class="mono">rootProject.buildDir</span></span><span class="id">B9</span></div>
+    <div class="body">
+      <p>در <span class="file">build.gradle.kts:13</span> &nbsp; <code class="mono">delete(rootProject.buildDir)</code>. در Gradle 8 این prop deprecated است؛ باید <span class="mono">layout.buildDirectory</span> استفاده شود.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">B10. عدم وجود dependency lock file</span><span class="id">B10</span></div>
+    <div class="body">
+      <p><span class="file">gradle/verification-metadata.xml</span> وجود ندارد. در پروژه‌ی ۹ ماژوله با ده‌ها dependency گذاری transitive، یک supply-chain attack یا یک cache-poisoning می‌تواند APK را آلوده کند.</p>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- =================================================================== -->
+<!-- C. NETWORK                                                          -->
+<!-- =================================================================== -->
+<section id="sec-C" class="card">
+  <h2><span class="anchor"></span>C. شبکه &amp; مدیریت خطا</h2>
+  <p class="desc">قلب پلن §۷ این بود که «گلوگاه واحد <span class="mono">safeApiCall</span>» وجود داشته باشد. در عمل هیچ‌جا نیست.</p>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">C1. لیک توکن در Logcat</span><span class="id">C1</span></div>
+    <div class="body">
+      <p>(تکرار EXEC-1) — <span class="file">core/network/.../AuthInterceptor.kt:36</span> &nbsp; <code class="mono">Log.d("tokens", initialToken)</code> + <span class="mono">HttpLoggingInterceptor.Level.BODY</span> در DEBUG.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">C2. هیچ <span class="mono">safeApiCall</span> وجود ندارد — ۲۱ Repository دستی try/catch می‌کنند</span><span class="id">C2</span></div>
+    <div class="body">
+      <p>گرپ روی <span class="mono">safeApiCall</span> در کل پروژه = صفر نتیجه. در عوض ۲۱ فایل Repository هرکدام کد زیر را تکرار کرده‌اند:</p>
+      <pre class="code"><span class="bad">try {
+    val response = api.xxx()
+    if (response.isSuccessful) Result.Ok(...) else Result.Err(...)
+} catch (e: HttpException) { ... }
+catch (t: Throwable) { Result.Err(mapError(t)) }</span></pre>
+      <p>مثال‌های بدتر:</p>
+      <ul>
+        <li><span class="file">data/.../auth/AuthRepositoryImpl.kt</span> — ۸ بلاک catch روی Throwable در یک فایل ۴۵۹ خطی.</li>
+        <li><span class="file">data/.../cargo/CargosRepositoryImpl.kt</span> — ۷ catch روی Throwable.</li>
+        <li><span class="file">data/.../driver/DriverCargoRepositoryImpl.kt</span> — ۶ catch.</li>
+      </ul>
+      <div class="fix"><span class="label">راه‌حل:</span> پیاده‌سازی <span class="mono">SafeApiCall.kt</span> در <span class="mono">:core:network</span> طبق امضاهای پلن §۷.۴، بعد جایگزینی تدریجی + قاعده‌ی Konsist «Direct api.* call without safeApiCall is forbidden».</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">C3. Parse دستی <span class="mono">errorBody</span> در ۱۲ Repository</span><span class="id">C3</span></div>
+    <div class="body">
+      <p>هر Repository خودش <span class="mono">json.decodeFromString&lt;ProblemDetailsDto&gt;(...)</span> می‌نویسد. دو DTO با نام <span class="mono">ProblemDetailsDto</span> در پروژه وجود دارد (یکی در <span class="mono">:core:network</span>، یکی در <span class="mono">:data</span>).</p>
+      <div class="fix"><span class="label">راه‌حل:</span> یک <span class="mono">ApiErrorParser</span> + <span class="mono">ProblemDetailsDto</span> RFC-7807 در <span class="mono">:core:network</span>، حذف نسخه‌ی data.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">C4. هم <span class="mono">AuthInterceptor</span> و هم <span class="mono">TokenAuthenticator</span> توکن را refresh می‌کنند</span><span class="id">C4</span></div>
+    <div class="body">
+      <p>در <span class="file">AuthInterceptor.kt</span> منطق refresh + retry با <span class="mono">synchronized</span> نوشته شده. در <span class="file">TokenAuthenticator.kt</span> هم همین منطق دوباره. این دو می‌توانند هم‌زمان trigger شوند → دو refresh موازی، token race، invalidation متقابل.</p>
+      <p>علاوه بر این، <span class="mono">synchronized(refreshLock)</span> داخل OkHttp dispatcher thread یعنی هر درخواست همزمان روی refresh قفل می‌شود (پشت سر هم).</p>
+      <div class="fix"><span class="label">راه‌حل (پلن §۱۴):</span> یک <span class="mono">TokenAuthenticator</span> تنها (Single-flight با <span class="mono">Mutex</span> از kotlinx-coroutines)، حذف منطق refresh از <span class="mono">AuthInterceptor</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">C5. کد «Trust All Certs» کامنت‌شده در فایل production</span><span class="id">C5</span></div>
+    <div class="body">
+      <p>در <span class="file">core/network/.../NetworkModule.kt:34-50</span> یک تابع <span class="mono">applyUnsafeTrustManager</span> کامنت ولی روی شاخه‌ی main commit شده است. خطر: یک developer تازه‌وارد uncomment می‌کند و به prod ship می‌شود.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> حذف کامل + اضافه کردن <span class="mono">CertificatePinner</span> طبق پلن §۱۴.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">C6. Cert Pinning وجود ندارد</span><span class="id">C6</span></div>
+    <div class="body">
+      <p>پلن §۱۴ صریحاً CertificatePinner را قید کرده. هیچ <span class="mono">CertificatePinner</span> در <span class="mono">:core:network</span> پیدا نشد.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">C7. <span class="mono">explicitNulls = false</span> در Json config</span><span class="id">C7</span></div>
+    <div class="body">
+      <p>این flag باعث می‌شود null برای فیلدهای optional سرور نادیده گرفته شود. اگر سرور یک فیلد required جدید اضافه کند و null برگرداند، در client هیچ خطایی نخواهد داد و باگ‌های منطقی ایجاد می‌شود.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> برای DTOهایی که قطعاً nullable هستند، <span class="mono">val x: String? = null</span> به‌صراحت تعریف شود؛ <span class="mono">explicitNulls</span> پیش‌فرض true بماند.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">C8. تگ <span class="mono">"DeviceFlow"</span> برای HttpLogging — نام‌گذاری گمراه‌کننده</span><span class="id">C8</span></div>
+    <div class="body">
+      <p><span class="file">NetworkModule.kt:57</span> &nbsp; <code class="mono">HttpLoggingInterceptor { msg -> Log.d("DeviceFlow", msg) }</code>. تگ "DeviceFlow" برای کل ترافیک HTTP استفاده می‌شود — در هنگام جستجوی لاگ، با لاگ‌های مرتبط با Device Registration قاطی می‌شود.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev good">نکته‌ی مثبت</span><span class="title">‪+‬ <span class="mono">NetworkErrorMapper</span> آماده‌ی استفاده</span><span class="id">C+</span></div>
+    <div class="body">
+      <p>در <span class="file">domain/src/main/kotlin/com/bt/barex/domain/core/NetworkErrorMapper.kt</span> یک Mapper مرکزی برای HTTP code → AppError وجود دارد. این آماده است که داخل <span class="mono">safeApiCall</span> خوانده شود؛ کافی است wrapper نازکش نوشته شود.</p>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- =================================================================== -->
+<!-- D. MVVM                                                             -->
+<!-- =================================================================== -->
+<section id="sec-D" class="card">
+  <h2><span class="anchor"></span>D. MVVM &amp; UiState (UDF)</h2>
+  <p class="desc">قاعده‌ی پلن §۵: «یک <span class="mono">data class UiState</span> + یک <span class="mono">StateFlow&lt;UiState&gt;</span> + یک <span class="mono">SharedFlow&lt;UiEffect&gt;</span> به ازای هر صفحه». در عمل پراکندگی شدید است.</p>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">D1. ViewModelهای با چند <span class="mono">MutableStateFlow</span> پراکنده</span><span class="id">D1</span></div>
+    <div class="body">
+      <table class="kv">
+        <tr><th>ViewModel</th><th>تعداد <span class="mono">MutableStateFlow</span></th><th>وضعیت</th></tr>
+        <tr><td><span class="mono">HomePageViewModel</span></td><td class="mono">8</td><td>قاعده: ۱</td></tr>
+        <tr><td><span class="mono">MyCallsViewModel</span></td><td class="mono">6</td><td>قاعده: ۱</td></tr>
+        <tr><td><span class="mono">CreateCargoViewModel</span></td><td class="mono">6</td><td>قاعده: ۱</td></tr>
+        <tr><td><span class="mono">MyCargoDetailViewModel</span></td><td class="mono">3</td><td>قاعده: ۱</td></tr>
+        <tr><td><span class="mono">MyLoadsViewModel</span></td><td class="mono">3</td><td>قاعده: ۱</td></tr>
+        <tr><td><span class="mono">MainNavigationViewModel</span></td><td class="mono">3</td><td>+ یکی از آن‌ها command bus است (باید SharedFlow)</td></tr>
+      </table>
+      <p>مثال در <span class="file">feature-list/.../HomePageViewModel.kt:40-65</span>: ۸ متغیر mutable مستقل برای banners, hasSuggestedCargo, hasSaveTruck, agreedLoad, pendingAgreementsAvailable, saveTruck, homePageState, ... — هر تغییر یک recompose مستقل.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> ادغام در یک <span class="mono">data class HomeUiState(...)</span>؛ Compose از <span class="mono">.collectAsStateWithLifecycle()</span> روی همان یک stream استفاده می‌کند و خودش با Stable annotation مدیریت skip را انجام می‌دهد.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">D2. ViewModelها مستقیم Repository تزریق می‌کنند (نه UseCase)</span><span class="id">D2</span></div>
+    <div class="body">
+      <ul>
+        <li><span class="file">HomePageViewModel.kt:35</span> &nbsp; <code class="mono">private val driverCargoRepository: DriverCargoRepository</code></li>
+        <li><span class="file">HomeAgreedLoadViewModel.kt:28</span> &nbsp; <code class="mono">DriverCargoRepository</code></li>
+        <li><span class="file">CargoAroundMeViewModel.kt</span> — ۷ ارجاع به Repository</li>
+        <li><span class="file">MyLoadsViewModel.kt</span> — ۲ Repository</li>
+        <li><span class="file">MyCallsViewModel.kt</span> — ۳ Repository</li>
+        <li><span class="file">ProvincePickerViewModel.kt</span> — ۲ Repository</li>
+        <li><span class="file">myloads/ReportViolationScreen.kt:48</span> &nbsp; <code class="mono">ReportViolationViewModel(shipperCargoReportsRepository: ShipperCargoReportsRepository)</code></li>
+      </ul>
+      <p>این یعنی ViewModel به جزئیات data layer وابسته است؛ اضافه کردن business rule (مثلاً «اگر کاربر premium است، API دیگری بزن») داخل ViewModel انجام می‌شود → پراکندگی منطق دامنه.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> هر فراخوانی Repository به یک <span class="mono">XxxUseCase(operator invoke)</span> تبدیل شود. Konsist rule «*ViewModel must not depend on *Repository».</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">D3. ViewModelهای قدیمی Compose state را بیرون می‌دهند</span><span class="id">D3</span></div>
+    <div class="body">
+      <p><span class="file">app/src/main/java/com/bt/barex/app/ui/screens/SplashScreen.kt:110</span></p>
+      <pre class="code"><span class="bad">var state by mutableStateOf&lt;SplashState&gt;(SplashState.Loading)
+    private set</span></pre>
+      <p>این ViewModel را به Compose runtime می‌چسباند، تست با Turbine را غیرممکن می‌کند، و خارج از Composition قابل observe نیست.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> <span class="mono">private val _uiState = MutableStateFlow(SplashUiState.Loading)</span> و expose با <span class="mono">.asStateFlow()</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">D4. ViewModel به‌جای <span class="mono">SharedFlow&lt;UiEffect&gt;</span> از <span class="mono">StateFlow&lt;Command?&gt;</span> استفاده می‌کند</span><span class="id">D4</span></div>
+    <div class="body">
+      <p><span class="file">app/.../navigation/MainNavigationViewModel.kt</span> یک <span class="mono">MutableStateFlow&lt;MainNavCommand?&gt;</span> دارد و دستی با <span class="mono">consumeCommand()</span> آن را null می‌کند. این یعنی:</p>
+      <ul>
+        <li>اگر دو UI همزمان observe کنند، هر دو command را می‌گیرند.</li>
+        <li>اگر چرخش صفحه رخ دهد، command دوباره فرستاده می‌شود.</li>
+        <li>تست‌پذیری ضعیف.</li>
+      </ul>
+      <div class="fix"><span class="label">راه‌حل:</span> <span class="mono">MutableSharedFlow&lt;MainNavEffect&gt;(replay = 0)</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">D5. ViewModelها بدون <span class="mono">internal</span> visibility</span><span class="id">D5</span></div>
+    <div class="body">
+      <p>گرپ <span class="mono">internal class ... ViewModel</span> روی کل پروژه = صفر نتیجه. همه‌ی ViewModelها <span class="mono">public</span> هستند. طبق پلن §۱۰ همه‌چیز در feature باید <span class="mono">internal</span> باشد.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev good">نکته‌ی مثبت</span><span class="title">+ <span class="mono">ReportViolationViewModel</span> پترن صحیح را پیاده کرده</span><span class="id">D+</span></div>
+    <div class="body">
+      <p>این ViewModel هم <span class="mono">UiState</span> منفرد دارد، هم <span class="mono">events: SharedFlow&lt;ReportViolationEvent&gt;</span>. می‌تواند به‌عنوان «کد مرجع» در پروژه باشد. مشکل فقط جای فایل است (داخل Composable).</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- E. COMPOSE / UI                                                     -->
+<!-- =================================================================== -->
+<section id="sec-E" class="card">
+  <h2><span class="anchor"></span>E. Compose / UI</h2>
+  <p class="desc">رعایت‌نشدن <span class="mono">02-file-size-limits</span> در ابعاد فاجعه‌بار. ۱۷ فایل از حد ۶۰۰ خط رد شده.</p>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">E1. God Files — ۱۷ فایل از ۶۰۰ خط بزرگ‌تر</span><span class="id">E1</span></div>
+    <div class="body">
+      <table class="kv">
+        <tr><th>فایل</th><th>خطوط</th><th>مازاد بر حد ۶۰۰</th></tr>
+        <tr><td class="mono">feature-list/.../account/AccountScreen.kt</td><td class="mono">3171</td><td class="mono">+428%</td></tr>
+        <tr><td class="mono">feature-list/.../ListScreen.kt</td><td class="mono">2720</td><td class="mono">+353%</td></tr>
+        <tr><td class="mono">feature-list/.../CargoAroundMe.kt</td><td class="mono">2668</td><td class="mono">+345%</td></tr>
+        <tr><td class="mono">feature-auth/.../VehicleInfoScreen.kt</td><td class="mono">1918</td><td class="mono">+220%</td></tr>
+        <tr><td class="mono">feature-list/.../myCalls/MyCallsScreen.kt</td><td class="mono">1756</td><td class="mono">+193%</td></tr>
+        <tr><td class="mono">feature-list/.../myloads/MyCargoDetailScreen.kt</td><td class="mono">1586</td><td class="mono">+164%</td></tr>
+        <tr><td class="mono">feature-list/.../waybill/WaybillListScreen.kt</td><td class="mono">1572</td><td class="mono">+162%</td></tr>
+        <tr><td class="mono">feature-list/.../CargoDetailsScreen.kt</td><td class="mono">1339</td><td class="mono">+123%</td></tr>
+        <tr><td class="mono">feature-list/.../navigation/SearchScreenRoute.kt</td><td class="mono">1313</td><td class="mono">+118%</td></tr>
+        <tr><td class="mono">feature-auth/.../LoginScreen.kt</td><td class="mono">1185</td><td class="mono">+97%</td></tr>
+        <tr><td class="mono">feature-list/.../myCalls/CallDetailsScreen.kt</td><td class="mono">1054</td><td class="mono">+75%</td></tr>
+        <tr><td class="mono">feature-list/.../LoadCardExact.kt</td><td class="mono">1045</td><td class="mono">+74%</td></tr>
+        <tr><td class="mono">feature-list/.../createcargo/CargoInfoScreen.kt</td><td class="mono">973</td><td class="mono">+62%</td></tr>
+        <tr><td class="mono">feature-list/.../account/AppUpdateScreen.kt</td><td class="mono">923</td><td class="mono">+53%</td></tr>
+        <tr><td class="mono">feature-list/.../createcargo/PreviewScreen.kt</td><td class="mono">907</td><td class="mono">+51%</td></tr>
+        <tr><td class="mono">app/src/main/.../SplashScreen.kt</td><td class="mono">830</td><td class="mono">+38%</td></tr>
+        <tr><td class="mono">feature-list/.../createcargo/VehicleDetailsScreen.kt</td><td class="mono">816</td><td class="mono">+36%</td></tr>
+      </table>
+      <div class="fix"><span class="label">راه‌حل:</span> هر صفحه به Stateful entry + Stateless content + Sectionها (Header/List/Footer) شکسته شود. مرجع: <span class="mono">06-compose-conventions</span>. Detekt rule <span class="mono">LongMethod</span>/<span class="mono">LongClass</span> در CI.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">E2. <span class="mono">collectAsState()</span> بدون lifecycle در ۱۶ فایل</span><span class="id">E2</span></div>
+    <div class="body">
+      <p>طبق پلن همیشه باید <span class="mono">collectAsStateWithLifecycle()</span> استفاده شود. نمونه‌ها: <span class="mono">PreviewScreen.kt</span> (۳ بار)، <span class="mono">CargoAroundMe.kt</span> (۲)، <span class="mono">VehicleInfoScreen.kt</span>، <span class="mono">CargoInfoScreen.kt</span> (۲)، <span class="mono">MainActivity.kt</span>، ... .</p>
+      <p>استفاده از <span class="mono">collectAsState</span> ساده در صفحه‌ای که در پشت صحنه‌ی اپ است، ادامه‌ی collect (و درنتیجه مصرف باتری/شبکه) را نگه می‌دارد.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">E3. ViewModel داخل فایل Composable تعریف شده</span><span class="id">E3</span></div>
+    <div class="body">
+      <ul>
+        <li><span class="file">feature-list/.../myloads/ReportViolationScreen.kt</span> &mdash; ViewModel + UiState + Effects همگی در همان فایل</li>
+        <li><span class="file">app/.../SplashScreen.kt</span> &mdash; <span class="mono">SplashVM</span> + <span class="mono">SplashState</span> در همان فایل ۸۳۰ خطی</li>
+        <li><span class="file">feature-auth/.../identityverification/IdentityVerificationScreen.kt</span></li>
+      </ul>
+      <div class="fix"><span class="label">راه‌حل:</span> هر ViewModel/UiState/UiEffect در فایل و پکیج جدا (طبق پلن §۳.۳).</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">E4. <span class="mono">ListFeatureEntry.kt</span> — God navigation graph با ۷۰۷ خط</span><span class="id">E4</span></div>
+    <div class="body">
+      <p>یک کلاس واحد همه‌ی destinationهای ۷ feature را register می‌کند. <span class="file">feature-list/.../navigation/ListFeatureEntry.kt</span>. هر بار اضافه‌کردن یک مسیر جدید نیاز به merge-conflict دارد.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> هر feature خودش <span class="mono">XxxFeatureEntry</span> داشته باشد.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">E5. wildcard import ها در Composableها</span><span class="id">E5</span></div>
+    <div class="body">
+      <p><span class="mono">import androidx.compose.foundation.layout.*</span> و <span class="mono">androidx.compose.material3.*</span> در ده‌ها فایل. این کار debugging خطاهای resolution را سخت می‌کند و بر خلاف <span class="mono">09-naming-and-conventions</span> است.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">E6. رنگ هاردکد به‌جای استفاده از <span class="mono">MaterialTheme.colorScheme</span></span><span class="id">E6</span></div>
+    <div class="body">
+      <p>صدها <span class="mono">Color(0xFFxxxxxx)</span> در Composableها (جستجو در <span class="mono">AccountScreen.kt</span>، <span class="mono">ListScreen.kt</span>، ...). این یعنی dark mode واقعی غیرممکن است و brand-refresh بعدی هزاران تغییر می‌خواهد.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">E7. الگوی LazyColumn بدون <span class="mono">key</span> و <span class="mono">contentType</span></span><span class="id">E7</span></div>
+    <div class="body">
+      <p>در فایل‌های لیست بزرگ (Cargo, Calls, Waybill) چک‌کنید — اگر <span class="mono">items(list)</span> بدون <span class="mono">key</span> استفاده شده، در lazy scroll باعث recompose غیرضروری می‌شود.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- F. SOURCE SET / NAMING                                              -->
+<!-- =================================================================== -->
+<section id="sec-F" class="card">
+  <h2><span class="anchor"></span>F. Source Set &amp; نام‌گذاری</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">F1. تناقض Case در پوشه vs package &mdash; پروژه روی Linux نمی‌سازد</span><span class="id">F1</span></div>
+    <div class="body">
+      <p>پوشه <span class="file">feature-list/src/main/java/com/bt/barex/feature/list/myCalls/</span> اما همه‌ی ۹ فایل داخلش <code class="mono">package com.bt.barex.feature.list.mycalls</code> دارند. روی Windows fs case-insensitive کار می‌کند، روی filesystem case-sensitive (همه‌ی Linux، CI صورت‌های Docker، Mac با APFS case-sensitive) build شکست می‌خورد یا کلاس‌ها بین Composableها resolve نمی‌شوند.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> rename پوشه (با git mv در دو commit برای case-insensitive fs)، یا تغییر همه‌ی package declaration ها به <span class="mono">myCalls</span>. پیشنهاد: لوورکیس <span class="mono">mycalls</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">F2. پوشه‌ی PascalCase — <span class="mono">core/.../core/Utils/</span></span><span class="id">F2</span></div>
+    <div class="body">
+      <p><span class="file">core/common/src/main/java/com/bt/barex/core/Utils/AndroidDeviceInfoUtil.kt</span> — پکیج <span class="mono">com.bt.barex.core.Utils</span> با حرف بزرگ <b>U</b>. مرجع <span class="mono">09-naming-and-conventions</span>: «package‌ها lowercase».</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">F3. Mixed source set در <span class="mono">:domain</span></span><span class="id">F3</span></div>
+    <div class="body">
+      <p>هم <span class="file">domain/src/main/java/</span> دارد (<span class="mono">DeviceRegistration.kt</span>, <span class="mono">DeviceRepository.kt</span>, <span class="mono">RegisterDeviceUseCase.kt</span>, <span class="mono">IdentityVerificationUseCase.kt</span>) و هم <span class="file">domain/src/main/kotlin/</span> (بقیه). این anti-pattern صریح در <span class="mono">08-anti-patterns</span> است.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> همه به <span class="mono">src/main/kotlin/</span> منتقل شوند. ماژول pure-jvm فقط kotlin sourceset لازم دارد.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">F4. کل پروژه در <span class="mono">src/main/java/</span> به‌جای <span class="mono">src/main/kotlin/</span></span><span class="id">F4</span></div>
+    <div class="body">
+      <p>۳۷۵ فایل Kotlin همگی در پوشه <span class="mono">java/</span>. Android Studio هندل می‌کند ولی این یک سیگنال «پروژه مهاجرت ناتمام از Java دارد» است و عجیب‌تر اینکه فقط ۲ فایل Java باقی است.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">F5. نام‌گذاری ماژول و فایل ListScreen گمراه‌کننده</span><span class="id">F5</span></div>
+    <div class="body">
+      <p><span class="mono">:feature-list</span> ولی فایل <span class="mono">ListScreen.kt</span> در عمل صفحه‌ی Home است (Banner + جستجو + سرویس‌ها). تنها «list» داخلش بنرهاست. نام مدل ذهنی برای توسعه‌دهندگان جدید را خراب می‌کند.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- G. REPOSITORY                                                       -->
+<!-- =================================================================== -->
+<section id="sec-G" class="card">
+  <h2><span class="anchor"></span>G. Repository / Data Layer</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">G1. <span class="mono">AuthRepositoryImpl.kt</span> — God Repository با ۴۵۹ خط و دو کلاس در یک فایل</span><span class="id">G1</span></div>
+    <div class="body">
+      <p>در <span class="file">data/.../auth/AuthRepositoryImpl.kt</span>:</p>
+      <ul>
+        <li>کلاس <span class="mono">AuthRepositoryImpl</span> (۴۰۰ خط)</li>
+        <li>کلاس <span class="mono">TokenSessionRepository</span> (۶۰ خط) — داخل همان فایل</li>
+        <li>منطق retry سفارشی برای OTP با شمارنده‌های mutable: <span class="mono">recoveryAttempts</span>, <span class="mono">sameDeviceRetryAttempts</span>, <span class="mono">hasFreshDeviceFromRecovery</span>, <span class="mono">fallbackWithoutDeviceIdTried</span>, <span class="mono">currentDeviceId</span></li>
+        <li>دو سری نگاشت خطا: <span class="mono">mapError</span>, <span class="mono">mapHttpException</span> + parse دستی</li>
+        <li>۸ بلاک catch مختلف</li>
+        <li><span class="mono">delay(1200L)</span> و backoff manual</li>
+        <li>Direct <span class="mono">Dispatchers.IO</span></li>
+      </ul>
+      <div class="fix"><span class="label">راه‌حل:</span> کل منطق retry به <span class="mono">RetryInterceptor</span> در <span class="mono">:core:network</span>؛ Repository فقط <span class="mono">safeApiCall { api.requestOtp(...) }.mapData { it.toDomain() }</span>؛ <span class="mono">TokenSessionRepository</span> فایل جدا.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">G2. <span class="mono">TokenSessionRepository.clearSession()</span> نام دیتابیس را hardcode می‌کند</span><span class="id">G2</span></div>
+    <div class="body">
+      <p>در <span class="file">AuthRepositoryImpl.kt:442</span> &nbsp; <code class="mono">runCatching { appContext.deleteDatabase("shofer.db") }</code>. این Repository را به جزئیات <span class="mono">:core:database</span> چسبانده. اگر فردا اسم DB تغییر کند، logout صامت می‌شکند.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> یک <span class="mono">DatabaseCleaner</span> interface در <span class="mono">:core:database</span> که <span class="mono">clearAll()</span> دارد.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">G3. inconsistency در Dispatcher injection</span><span class="id">G3</span></div>
+    <div class="body">
+      <p>گرپ روی <span class="mono">Dispatchers.IO</span> = ۲ نتیجه: <span class="mono">DispatcherModule.kt</span> (تعریف qualifier — درست) و <span class="mono">AuthRepositoryImpl.kt</span> (استفاده مستقیم — غلط). یک‌جا qualifier استفاده می‌شود، یک‌جا نه.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">G4. ۲۱ فایل Repository با try/catch روی Throwable</span><span class="id">G4</span></div>
+    <div class="body">
+      <p>Catch روی <span class="mono">Throwable</span> یعنی <span class="mono">CancellationException</span> هم گرفته می‌شود (مگر دستی re-throw شود) — این Coroutine cancellation را می‌شکند و در صفحاتی که navigate away می‌شوند، Repository ادامه می‌دهد.</p>
+      <p>فایل‌های مشکل: <span class="file">AuthRepositoryImpl.kt</span> (۸ بار)، <span class="file">CargosRepositoryImpl.kt</span> (۷)، <span class="file">DriverCargoRepositoryImpl.kt</span> (۶)، ...</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- H. DATABASE                                                         -->
+<!-- =================================================================== -->
+<section id="sec-H" class="card">
+  <h2><span class="anchor"></span>H. Database (Room)</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">H1. Dead Room — <span class="mono">ItemEntity</span>/<span class="mono">ItemsDao</span> هیچ‌جا استفاده نشده</span><span class="id">H1</span></div>
+    <div class="body">
+      <p><span class="file">core/database/.../AppDatabase.kt</span> فقط <span class="mono">ItemEntity</span> دارد و گرپ پروژه نشان می‌دهد این کلاس فقط در همان فایل و <span class="mono">DatabaseModule.kt</span> ارجاع داده می‌شود — هرگز توسط هیچ Repository استفاده نشده. اسکلت بی‌مصرف.</p>
+      <div class="fix"><span class="label">راه‌حل (پلن §۸):</span> یا حذف، یا تبدیل به پایلوت <span class="mono">:feature:calls</span> با <span class="mono">CallEntity</span> + <span class="mono">CallRemoteKeyEntity</span> + RemoteMediator.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">H2. عدم تنظیم <span class="mono">room.schemaLocation</span> &mdash; schema export نشده</span><span class="id">H2</span></div>
+    <div class="body">
+      <p><span class="file">core/database/build.gradle.kts</span> هیچ <span class="mono">ksp { arg("room.schemaLocation", ...) }</span> ندارد. اولین تغییر schema → migration دستی غیرممکن، fallbackToDestructiveMigration = از دست رفتن داده‌ی کاربر در update.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">H3. <span class="mono">Room.databaseBuilder(...).build()</span> بدون migration registry</span><span class="id">H3</span></div>
+    <div class="body">
+      <p><span class="file">core/database/.../DatabaseModule.kt:17</span> &mdash; هیچ <span class="mono">.addMigrations(...)</span> یا <span class="mono">.fallbackToDestructiveMigrationOnDowngrade()</span> صریح. با bump version در فاز ۵، migration ها از کجا می‌آیند؟</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">H4. تعریف Entity/DAO/Database همه در یک فایل</span><span class="id">H4</span></div>
+    <div class="body">
+      <p>پلن §۸.۳ صریحاً Entity در feature، DAO در feature/data/local، Database در core. الان همه در یک فایل ۳۶ خطی هستند که برای پایلوت بد نیست ولی الگوی مرجع نیست.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- I. DATASTORE / TOKEN                                                -->
+<!-- =================================================================== -->
+<section id="sec-I" class="card">
+  <h2><span class="anchor"></span>I. DataStore &amp; Token Storage</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">I1. ماژول به‌نام <span class="mono">:core:datastore</span> ولی در عمل از SharedPreferences استفاده می‌کند</span><span class="id">I1</span></div>
+    <div class="body">
+      <p><span class="file">core/datastore/.../TokenStorage.kt</span> از <span class="mono">EncryptedSharedPreferences</span> + <span class="mono">MasterKeys.AES256_GCM_SPEC</span> (هر دو deprecated) استفاده می‌کند. هیچ <span class="mono">androidx.datastore.preferences</span> در آن نیست — حتی با وجود <span class="mono">implementation libs.datastore.preferences</span> در <span class="mono">build.gradle.kts</span>.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> مهاجرت کامل به <span class="mono">DataStore&lt;Preferences&gt;</span> با AES-256 encryption لایه‌ی اپ، یا مهاجرت به نسخه‌ی stable <span class="mono">androidx.security 1.1.0</span> + <span class="mono">MasterKey.Builder</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">I2. ‪‪synchronous I/O روی thread فراخواننده</span><span class="id">I2</span></div>
+    <div class="body">
+      <pre class="code">var accessToken: String?
+    get() = prefs.getString("access", null)
+    <span class="bad">set(v) { prefs.edit().putString("access", v).commit() }</span></pre>
+      <p><span class="mono">.commit()</span> روی main thread می‌تواند ANR ایجاد کند (مخصوصاً اولین بار که فایل پر است). در <span class="file">AuthInterceptor.kt:57-59</span> این setter از داخل OkHttp dispatcher صدا زده می‌شود &mdash; قابل قبول &mdash; ولی اگر یک‌جا از Composable صدا زده شود، ANR.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">I3. <span class="mono">TokenStorage</span> بدون interface</span><span class="id">I3</span></div>
+    <div class="body">
+      <p>Repositoryها به concrete <span class="mono">TokenStorage</span> وابسته‌اند. تست‌پذیری ضعیف. در پلن §۳.۲ یک <span class="mono">TokenStorage</span> interface در <span class="mono">:shared-kernel</span> پیشنهاد شده.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">I4. Single Responsibility violation</span><span class="id">I4</span></div>
+    <div class="body">
+      <p><span class="mono">TokenStorage</span> هم Token دارد، هم <span class="mono">phoneNumber</span>، هم <span class="mono">nationalCode</span>. سه مفهوم متفاوت در یک کلاس.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- J. DI / HILT                                                        -->
+<!-- =================================================================== -->
+<section id="sec-J" class="card">
+  <h2><span class="anchor"></span>J. DI / Hilt</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">J1. <span class="mono">:feature-upload</span> از Hilt استفاده می‌کند ولی plugin/dependency ندارد</span><span class="id">J1</span></div>
+    <div class="body">
+      <p><span class="file">feature-upload/build.gradle.kts</span> &mdash; نه <span class="mono">alias(libs.plugins.hilt)</span> دارد، نه <span class="mono">implementation(libs.hilt.android)</span>، نه <span class="mono">ksp(libs.hilt.compiler)</span>. اما به‌خاطر transitive dependency از <span class="mono">:data</span> کار می‌کند. اگر <span class="mono">:data</span> یک روز بدون Hilt شود، این ماژول می‌شکند.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">J2. <span class="mono">:feature-list</span> از <span class="mono">@HiltViewModel</span> استفاده می‌کند ولی Hilt plugin اعمال نشده</span><span class="id">J2</span></div>
+    <div class="body">
+      <p><span class="file">feature-list/build.gradle.kts</span> &mdash; <span class="mono">alias(libs.plugins.hilt)</span> ندارد. فقط <span class="mono">implementation(libs.hilt.android)</span> + <span class="mono">ksp(libs.hilt.compiler)</span>. این برای annotation processing کافی است ولی <span class="mono">@HiltAndroidApp</span> processing را اعمال نمی‌کند (نیازی نیست چون Application در <span class="mono">:app</span> است). <b>اما</b> هیچ‌جا plugin Hilt در feature ها صریح نیست.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">J3. <span class="mono">:app</span> هم data دارد هم domain</span><span class="id">J3</span></div>
+    <div class="body">
+      <p><span class="file">app/build.gradle.kts:127-128</span> &nbsp; <code class="mono">implementation(project(":domain")); implementation(project(":data"))</code>. در پلن §۲۱ این صراحتاً ممنوع است: «<span class="mono">:app</span> data ندارد».</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">J4. عدم استفاده از <span class="mono">@Binds</span> برای Repository (بسته به نیاز)</span><span class="id">J4</span></div>
+    <div class="body">
+      <p>چک شود که هرکدام از Interfaceهای Repository با <span class="mono">@Binds</span> به <span class="mono">RepositoryImpl</span> bound شده‌اند یا با <span class="mono">@Provides</span> (که reflection بیشتر می‌آورد).</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- K. HYGIENE                                                          -->
+<!-- =================================================================== -->
+<section id="sec-K" class="card">
+  <h2><span class="anchor"></span>K. Hygiene &amp; سلامت Repository</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">K1. فایل‌های نامرتبط با Android در روت پروژه</span><span class="id">K1</span></div>
+    <div class="body">
+      <ul>
+        <li><span class="file">dotnet-install.sh</span> &mdash; ۶۵ کیلوبایت اسکریپت <span class="mono">dotnet</span>، چرا در یک پروژه‌ی Android؟</li>
+        <li><span class="file">dummy</span> &mdash; ۱۳۹ بایت، یک Jupyter notebook stub.</li>
+        <li><span class="file">shofer-api-formatted.json</span> &mdash; صفر بایت، فایل خالی commit شده.</li>
+        <li><span class="file">shofer-api.json</span> &mdash; ۱۳۸ کیلوبایت OpenAPI، روت پروژه جای آن نیست.</li>
+      </ul>
+      <div class="fix"><span class="label">راه‌حل:</span> همه یا حذف یا منتقل به <span class="mono">docs/</span> / <span class="mono">api-spec/</span>.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">K2. ۷ فایل markdown در روت</span><span class="id">K2</span></div>
+    <div class="body">
+      <p><span class="mono">16KB_PAGE_SIZE_MIGRATION.md</span>، <span class="mono">CARGO_IMPLEMENTATION_GUIDE.md</span>، <span class="mono">COMPOSE_COMPILER_PLUGIN_MIGRATION.md</span>، <span class="mono">DEVICE_REGISTRATION_IMPLEMENTATION.md</span>، <span class="mono">IMPLEMENTATION_SUMMARY.md</span>، <span class="mono">MIGRATION.md</span>، <span class="mono">MY_LOADS_IMPLEMENTATION_SUMMARY.md</span>. + <span class="mono">README.md</span>. روت شلوغ. این‌ها mostly «خبر مهاجرت‌های قدیمی» هستند که حتی ممکن است deprecated باشند.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> همه به <span class="mono">docs/migrations/</span>؛ README فقط onboarding سریع.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">K3. <span class="mono">local.properties</span> روی repo (اگرچه در <span class="mono">.gitignore</span> هست)</span><span class="id">K3</span></div>
+    <div class="body">
+      <p><span class="file">local.properties</span> با محتوای <span class="mono">sdk.dir=D\:\\SDK</span> commit شده. یعنی قبل از اضافه شدن به <span class="mono">.gitignore</span> tracked بوده. باید با <span class="mono">git rm --cached local.properties</span> از index حذف شود.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">K4. <span class="mono">google-services.json</span> یکسان برای ۳ flavor</span><span class="id">K4</span></div>
+    <div class="body">
+      <p>این فایل ۳ <span class="mono">android_client_info.package_name</span> دارد (<span class="mono">com.bt.barex</span>, <span class="mono">.dev</span>, <span class="mono">.stg</span>) — درست است. ولی همگی روی project firebase یکسان (<span class="mono">barex-be936</span>) هستند، یعنی crash dev و prod در یک پروژه قاتی می‌شود. در محصول جدی توصیه می‌شود dev/stag روی پروژه جدا باشند.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">K5. کامنت‌های مرده در <span class="mono">libs.versions.toml</span></span><span class="id">K5</span></div>
+    <div class="body">
+      <p>خطوط <span class="mono"># camerax = "1.3.2"</span> و <span class="mono"># ucrop = "2.2.8"</span> و در <span class="mono">build.gradle.kts</span> ها بلاک‌های comment شده. بهتر است حذف شوند &mdash; git history همیشه هست.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- L. MANIFEST                                                         -->
+<!-- =================================================================== -->
+<section id="sec-L" class="card">
+  <h2><span class="anchor"></span>L. Manifest &amp; Permissions</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">L1. permission تکراری</span><span class="id">L1</span></div>
+    <div class="body">
+      <p><span class="file">app/src/main/AndroidManifest.xml:8,11</span> &mdash; <span class="mono">android.permission.ACCESS_NETWORK_STATE</span> دو بار declared شده.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">L2. <span class="mono">android:allowBackup="false"</span> بدون <span class="mono">android:dataExtractionRules</span></span><span class="id">L2</span></div>
+    <div class="body">
+      <p>روی Android 12+ Lint warning می‌دهد و در صورت توافق امنیتی، بهتر است <span class="mono">android:dataExtractionRules</span> برای کنترل D2D transfer هم declare شود.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">L3. <span class="mono">screenOrientation="portrait"</span> روی همه‌ی صفحات</span><span class="id">L3</span></div>
+    <div class="body">
+      <p>این روی Foldable و tablet تجربه‌ی بدی می‌دهد و اخیراً Google Play توصیه می‌کند <span class="mono">unspecified</span> به‌جای locking باشد.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">L4. عدم declaration <span class="mono">android:fullBackupContent</span></span><span class="id">L4</span></div>
+    <div class="body">
+      <p>چون <span class="mono">allowBackup=false</span> فعلاً مهم نیست، ولی اگر روزی فعال شود، هیچ rule مشخصی برای exclude کردن <span class="mono">tokens</span>/SharedPreferences وجود ندارد.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- M. COROUTINES                                                       -->
+<!-- =================================================================== -->
+<section id="sec-M" class="card">
+  <h2><span class="anchor"></span>M. Coroutines &amp; Concurrency</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">M1. <span class="mono">viewModelScope.launch(start = CoroutineStart.UNDISPATCHED)</span></span><span class="id">M1</span></div>
+    <div class="body">
+      <p>در <span class="file">HomePageViewModel.kt:90</span> و <span class="file">HomeAgreedLoadViewModel.kt:89</span>. <span class="mono">UNDISPATCHED</span> یعنی اولین خط coroutine روی همان thread که <span class="mono">launch</span> صدا زده شد اجرا می‌شود (احتمالاً Main). برای OkHttp یا Json parsing این می‌تواند جانب UI را freeze کند.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> فقط برای موارد خاص (مثلاً جلوی سوسوی UI گرفتن قبل از <span class="mono">delay</span>) استفاده شود؛ به‌جای آن از <span class="mono">stateIn(SharingStarted.WhileSubscribed)</span> روی Flow استفاده شود.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">M2. de-duplication با Boolean (race condition)</span><span class="id">M2</span></div>
+    <div class="body">
+      <p><span class="file">HomePageViewModel.kt:67</span> و <span class="file">HomeAgreedLoadViewModel.kt:34</span> &mdash; <code class="mono">private var isFetching = false</code>. این از race مصون نیست (دو فراخوانی هم‌زمان از Compose).</p>
+      <div class="fix"><span class="label">راه‌حل:</span> <span class="mono">Mutex</span>، یا <span class="mono">stateIn</span> روی Flow.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">M3. catch روی <span class="mono">Throwable</span> بدون re-throw <span class="mono">CancellationException</span></span><span class="id">M3</span></div>
+    <div class="body">
+      <p>در ۲۱ Repository (به بخش G4 رجوع شود). با لغو navigation، کار background ادامه پیدا می‌کند و state stale می‌نویسد.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev good">نکته‌ی مثبت</span><span class="title">+ هیچ <span class="mono">GlobalScope</span> یا <span class="mono">runBlocking</span> در پروژه نیست</span><span class="id">M+</span></div>
+    <div class="body">
+      <p>گرپ صفر نتیجه. این انضباط خوب است.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- N. TESTING                                                          -->
+<!-- =================================================================== -->
+<section id="sec-N" class="card">
+  <h2><span class="anchor"></span>N. Testing &amp; CI</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">N1. هیچ ماژول <span class="mono">:konsist-test</span> وجود ندارد</span><span class="id">N1</span></div>
+    <div class="body">
+      <p>پلن §۱۷ صریحاً Konsist را فقط لایه‌ی تست لازم در فاز ۱ معرفی کرده. الان هیچ guard معماری compile-time/CI-time نداریم.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> ساخت ماژول <span class="mono">:konsist-test</span> با ۱۲ قاعده‌ی پلن.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">N2. تست‌های موجود کافی نیستند</span><span class="id">N2</span></div>
+    <div class="body">
+      <p>تنها تست‌های قابل توجه: <span class="file">data/.../truck/TruckProfileRepositoryImplTest.kt</span> (۷۱۰ خط، یک کلاس تست خودش غول است)، <span class="file">AuthRepositoryNationalIdStatusTest.kt</span>، چند ViewModelTest. بدون coverage و بدون اجرا در CI.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">N3. Detekt / Lint config در پروژه نیست</span><span class="id">N3</span></div>
+    <div class="body">
+      <p>هیچ <span class="mono">detekt.yml</span> یا <span class="mono">lint.xml</span> سراسری دیده نشد. Detekt برای enforce کردن <span class="mono">LongMethod</span> / <span class="mono">LongParameterList</span> / <span class="mono">MagicNumber</span> ضروری است (پلن §۱۰).</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">N4. هیچ GitHub Actions / CI yaml دیده نشد</span><span class="id">N4</span></div>
+    <div class="body">
+      <p>پوشه‌ی <span class="mono">.github/</span> در root پیدا نشد. بدون pipeline، هیچ guarantee ای نیست که حتی <span class="mono">assembleDebug</span> برای هر PR run شود.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- O. PERFORMANCE                                                      -->
+<!-- =================================================================== -->
+<section id="sec-O" class="card">
+  <h2><span class="anchor"></span>O. Performance / R8 / Build Speed</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">O1. <span class="mono">abiFilters</span> شامل <span class="mono">armeabi-v7a</span></span><span class="id">O1</span></div>
+    <div class="body">
+      <p><span class="file">app/build.gradle.kts:36</span> &nbsp; <code class="mono">abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))</code>. در ۲۰۲۶ کم‌تر از ۱٪ کاربران v7a دارند. حجم APK بزرگ‌تر و build زمان‌گیرتر.</p>
+      <p>کامنت در همان فایل اشاره می‌کند که برای SM-A115F نگه داشته شده، ولی این یک device dev است.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> در flavor <span class="mono">dev</span> نگه‌داشته شود، در <span class="mono">prod</span> حذف.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">O2. <span class="mono">proguard-rules.pro</span> خیلی کوچک</span><span class="id">O2</span></div>
+    <div class="body">
+      <p>حجم ۱۱۹۶ بایت &mdash; با Hilt + Retrofit + Coil + kotlinx.serialization مصرفی، rule های keep لازم است. R8 release احتمالاً runtime crash می‌دهد.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> هر کتابخانه (Retrofit, Coil, Firebase, Hilt) consumer rules خودش را دارد ولی برای DTOهای <span class="mono">@Serializable</span> یا کلاس‌های reflective باید keep دستی نوشته شود.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">O3. عدم Baseline Profile</span><span class="id">O3</span></div>
+    <div class="body">
+      <p>پلن §۲۰ فاز ۵ آن را قید کرده. الان نیست &mdash; cold start بهینه نیست.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">O4. Compose Stability config مشخص نشده</span><span class="id">O4</span></div>
+    <div class="body">
+      <p>هیچ <span class="mono">stability_config.conf</span> برای ماژول‌های feature تنظیم نشده. مدل‌های Domain که در UiState استفاده می‌شوند به‌عنوان Unstable حساب می‌شوند &mdash; recomposition بیش از حد.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- P. LOGGING / OBSERVABILITY                                          -->
+<!-- =================================================================== -->
+<section id="sec-P" class="card">
+  <h2><span class="anchor"></span>P. Logging &amp; Observability</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev crit">Critical</span><span class="title">P1. لاگ توکن Bearer (تکرار EXEC-1, C1)</span><span class="id">P1</span></div>
+    <div class="body">
+      <p>قطعی‌ترین مشکل امنیتی پروژه.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">P2. <span class="mono">android.util.Log</span> در ۳۰ فایل پراکنده &mdash; هیچ logger مرکزی</span><span class="id">P2</span></div>
+    <div class="body">
+      <p>پروژه از Timber یا یک wrapper مشابه استفاده نمی‌کند. تگ‌های هاردکد: <span class="mono">"DeviceFlow"</span>، <span class="mono">"tokens"</span>، <span class="mono">"ListFeatureEntry"</span>، ... &mdash; هرکس هرچه دلش می‌خواهد لاگ می‌گذارد.</p>
+      <div class="fix"><span class="label">راه‌حل:</span> wrapper نازک <span class="mono">AppLogger</span> در <span class="mono">:core:common</span> با <span class="mono">d/w/e</span> + sanitizer برای headerهای حساس + در release خاموش.</div>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">P3. Crashlytics non-fatal گزارش نمی‌شود</span><span class="id">P3</span></div>
+    <div class="body">
+      <p>گرپ <span class="mono">recordException</span> در پروژه = صفر استفاده‌ی واقعی. در حالی که پلن §۱۳ صراحتاً «همه‌ی AppError به صورت recordException گزارش شوند» را گفته. الان فقط fatal crashes ثبت می‌شود → دیدِ صفر روی خطاهای واقعی production.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">P4. <span class="mono">if (BuildConfig.DEBUG) Log.d(...)</span> به‌جای helper</span><span class="id">P4</span></div>
+    <div class="body">
+      <p>این الگو در <span class="file">AuthRepositoryImpl.kt</span> ۱۸ بار تکرار شده. باید یک <span class="mono">fun logD(...)</span> در logger مشترک قرار بگیرد.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- Q. DEAD CODE                                                        -->
+<!-- =================================================================== -->
+<section id="sec-Q" class="card">
+  <h2><span class="anchor"></span>Q. کدهای نیمه‌کاره / Dead Code / TODO</h2>
+
+  <div class="issue">
+    <div class="head"><span class="sev med">Medium</span><span class="title">Q1. <span class="mono">CrashlyticsTestCrash.install()</span> &mdash; بدنه‌ی فقط کامنت</span><span class="id">Q1</span></div>
+    <div class="body">
+      <p><span class="file">app/src/debug/.../CrashlyticsTestCrash.kt</span> &mdash; کل بدنه کامنت‌شده. کلاس وجود دارد، در <span class="mono">ShoferApp.onCreate</span> صدا زده می‌شود ولی هیچ کاری نمی‌کند. یا حذف، یا re-enable کن.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev high">High</span><span class="title">Q2. تابع unsafe TLS کامنت‌شده در Production source</span><span class="id">Q2</span></div>
+    <div class="body">
+      <p><span class="file">core/network/.../NetworkModule.kt:34-50</span>. خطر فعال‌سازی تصادفی توسط dev تازه‌وارد. (تکرار C5)</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">Q3. <span class="mono">camerax</span> و <span class="mono">ucrop</span> dependency comment-out</span><span class="id">Q3</span></div>
+    <div class="body">
+      <p>در <span class="file">libs.versions.toml</span> و چند فایل <span class="mono">build.gradle.kts</span>. حذف کامل توصیه می‌شود.</p>
+    </div>
+  </div>
+
+  <div class="issue">
+    <div class="head"><span class="sev low">Low</span><span class="title">Q4. <span class="mono">ItemEntity</span>/<span class="mono">ItemsDao</span> dead</span><span class="id">Q4</span></div>
+    <div class="body">
+      <p>(تکرار H1)</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- =================================================================== -->
+<!-- ROADMAP                                                             -->
+<!-- =================================================================== -->
+<section id="roadmap" class="card">
+  <h2><span class="anchor"></span>ترتیب پیشنهادی رفع (روی <i>برنامه‌ی پلن</i> سوار)</h2>
+  <p class="desc">این جدول هر یافته را به فاز پلن mapping می‌کند تا بتوانید به ترتیب اولویت اقدام کنید.</p>
+
+  <table class="kv">
+    <tr><th>گام</th><th>کارها</th><th>یافته‌های پوشش‌داده‌شده</th><th>هزینه</th></tr>
+    <tr>
+      <td><b>۰. اضطراری (الان)</b></td>
+      <td>
+        <ul>
+          <li>حذف <span class="mono">Log.d("tokens", ...)</span> از AuthInterceptor</li>
+          <li>حذف خط <span class="mono">include(":support")</span> یا ساخت ماژول</li>
+          <li>fix case folder <span class="mono">myCalls/</span> vs package <span class="mono">mycalls</span></li>
+          <li>حذف کد unsafe TLS</li>
+          <li>حذف <span class="mono">dotnet-install.sh</span>, <span class="mono">dummy</span>, <span class="mono">shofer-api-formatted.json</span></li>
+        </ul>
+      </td>
+      <td>EXEC-1, EXEC-2, EXEC-3, C5, K1</td>
+      <td>‌چند ساعت</td>
+    </tr>
+    <tr>
+      <td><b>فاز ۱ پلن (۲ هفته)</b></td>
+      <td>
+        <ul>
+          <li>ایجاد <span class="mono">:build-logic</span></li>
+          <li>یکسان‌سازی <span class="mono">compileSdk = 35</span></li>
+          <li>یکسان‌سازی نسخه‌های Material3/Paging</li>
+          <li>ماژول <span class="mono">:konsist-test</span> با ۱۲ قاعده</li>
+          <li>Detekt + lint.xml</li>
+          <li>حذف کدهای dead</li>
+        </ul>
+      </td>
+      <td>A6, B1, B2, B3, N1, N3, H1, Q1, Q3, Q4</td>
+      <td>۲ هفته (۱ نفر)</td>
+    </tr>
+    <tr>
+      <td><b>فاز ۱.۵ &mdash; safeApiCall</b></td>
+      <td>
+        <ul>
+          <li>پیاده‌سازی <span class="mono">SafeApiCall</span> + <span class="mono">ApiErrorParser</span> در <span class="mono">:core:network</span></li>
+          <li>یکپارچه‌سازی <span class="mono">TokenAuthenticator</span> (حذف refresh از Interceptor)</li>
+          <li>اضافه‌کردن <span class="mono">CertificatePinner</span></li>
+          <li>migration ۲۱ Repository به <span class="mono">safeApiCall</span></li>
+        </ul>
+      </td>
+      <td>C2, C3, C4, C6, G1, G4</td>
+      <td>۱-۲ هفته</td>
+    </tr>
+    <tr>
+      <td><b>فاز ۲ پلن (۱ هفته)</b></td>
+      <td>اجبار <span class="mono">ViewModel → UseCase</span> با Konsist + refactor ViewModelهای پراکنده به تک UiState</td>
+      <td>D1, D2, D3, D4, D5</td>
+      <td>۱ هفته</td>
+    </tr>
+    <tr>
+      <td><b>فاز ۳ پلن (۳-۴ هفته)</b></td>
+      <td>شکستن <span class="mono">:feature-list</span> به ۷ ماژول، حذف وابستگی feature-to-feature</td>
+      <td>A2, A3, A4, A5, F5</td>
+      <td>۳-۴ هفته</td>
+    </tr>
+    <tr>
+      <td><b>فاز ۴ پلن (۲-۳ هفته، موازی با ۳)</b></td>
+      <td>شکستن God Files (Account/List/CargoAroundMe/...)</td>
+      <td>E1, E3, E4</td>
+      <td>۲-۳ هفته</td>
+    </tr>
+    <tr>
+      <td><b>فاز ۵ پلن (۲-۳ هفته)</b></td>
+      <td>پایلوت Room در <span class="mono">:feature:calls</span> + Baseline Profile + Crashlytics non-fatal</td>
+      <td>H2, H3, O3, O4, P3</td>
+      <td>۲-۳ هفته</td>
+    </tr>
+    <tr>
+      <td><b>فاز ۶ پلن (۲ هفته)</b></td>
+      <td>Remote Config + Feature Flags + Play Integrity + SLO</td>
+      <td>—</td>
+      <td>۲ هفته</td>
+    </tr>
+  </table>
+</section>
+
+
+<section class="card">
+  <h2><span class="anchor"></span>یک خلاصه‌ی نهایی</h2>
+  <p>
+    پروژه در سطح «MVP که زنده است» قرار دارد، نه «محصول آماده‌ی مقیاس میلیون کاربر». نقاط قوت: ساختار اولیه‌ی modular، استفاده از Hilt، Compose، Coroutines، EncryptedPreferences، Crashlytics. نقاط ضعف اصلی: <b>هیچ‌کدام از قواعد طلایی پلن (UseCase/safeApiCall/internal/God-file/feature-isolation) رعایت نشده‌اند</b>. تمام ۱۲ قاعده‌ی Konsist که پلن §۱۷ پیشنهاد داده، الان در پروژه شکست می‌خورند. خبر خوب: همه‌ی این‌ها mechanical و قابل refactor هستند، مشروط به اینکه تیم بپذیرد <i>اول</i> guard های معماری (build-logic + konsist-test) را برپا کند، بعد مهاجرت تدریجی feature به feature شروع شود.
+  </p>
+  <p>
+    اگر بخواهید فردا یک تیم ۵-۸ نفره استخدام کنید، بدون این refactor چندین هفته طول می‌کشد تا یک developer جدید بفهمد <span class="mono">ListScreen.kt</span> چه کار می‌کند. با refactor (۸-۱۲ هفته) به نقطه‌ای می‌رسید که هر تیم روی feature خودش بدون merge-conflict کار می‌کند.
+  </p>
+</section>
+
+
+    </div><!-- /content -->
+  </div><!-- /layout -->
+
+  <footer>
+    Senior Architecture Review — Barex (Driver App) &nbsp;·&nbsp; مرجع پلن:
+    <span class="mono">target_architecture_document_26b0f71c.plan.md</span>
+  </footer>
+</main>
+
+<script>
+  (function () {
+    var key = "barex-issues-theme";
+    var saved = localStorage.getItem(key);
+    if (saved === "dark" || (saved == null && matchMedia("(prefers-color-scheme: dark)").matches)) {
+      document.documentElement.classList.add("dark");
+    }
+    document.getElementById("themeToggle").addEventListener("click", function () {
+      var d = document.documentElement;
+      d.classList.toggle("dark");
+      localStorage.setItem(key, d.classList.contains("dark") ? "dark" : "light");
+    });
+    document.querySelectorAll('nav.toc a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        document.querySelectorAll('nav.toc a').forEach(function (x) { x.style.background = ""; x.style.color = ""; });
+      });
+    });
+  })();
+</script>
+</body>
+</html>
