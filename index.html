@@ -471,8 +471,8 @@ graph TD
           <tr><td><code>:core:common</code></td><td>Dispatchers، Extensions، Date/Format helpers؛ ارجاع قراردادهای خطای مرکزی <strong><code>ApiResult</code>/<code>ApiFailure</code></strong> در <code>:shared-kernel</code> (طبق §۷)</td></tr>
           <tr><td><code>:core:navigation</code></td><td><code>FeatureEntry</code>, <code>AppDestinations</code>, Deep Links، Navigation events</td></tr>
           <tr><td><code>:core:designsystem</code></td><td><strong>منبع واحد UI:</strong> Theme، Colors، Typography، Dimens، Shapes؛ <strong><code>strings</code> مشترق</strong>؛ <strong>Drawable/mipmap گرافیکی مشترق</strong>؛ <strong>Composable کمکیٔ مشترک</strong>. <strong>بدون <code>:core:ui</code>.</strong></td></tr>
-          <tr><td><code>:core:analytics</code></td><td><strong>فقط Metrix:</strong> واسط نازک (هدف: حداقل API عمومی — مثلاً <code>trackScreen</code>، <code>trackEvent</code>)؛ بدون دست‌کشی مستقیم SDK در featureها</td></tr>
-          <tr><td><code>:core:notifications</code></td><td><strong>فقط FCM:</strong> کانال‌ها، نمایش با <code>NotificationCompat</code>، مسیریابی دیپ‌لینک و اقدام پس از کلیک؛ <strong>بدون</strong> آنالیتیک محصول و <strong>بدون</strong> استفادهٔ FCM به‌جای آنالیتیک</td></tr>
+          <tr><td><code>:core:analytics</code></td><td>Analytics manager + Screen tracker</td></tr>
+          <tr><td><code>:core:notifications</code></td><td>FCM + NotificationCompat</td></tr>
           <tr><td><code>:core:location</code></td><td>Play Services Location + WorkManager Worker</td></tr>
           <tr><td><code>:core:upload</code></td><td>WorkManager Upload Worker</td></tr>
         </tbody>
@@ -606,13 +606,12 @@ flowchart LR
           <tr><td><code>HttpLoggingInterceptor</code></td><td><code>:core:network</code></td><td>یک</td></tr>
           <tr><td>Headers (User-Agent, X-App-Version)</td><td><code>:core:network</code></td><td>متمرکز</td></tr>
           <tr><td>Cert Pinning</td><td><code>:core:network</code></td><td>متمرکز</td></tr>
-          <tr><td><code>safeApiCall</code> + <code>ApiErrorParser</code></td><td><code>:core:network</code></td><td><strong>تنها گلوگاه</strong> تفسیر <code>Response</code>/<code>errorBody</code>/Exception؛ ساخت <strong><code>ApiFailure</code></strong>؛ خروج <strong><code>ApiResult</code></strong> (طبق §۷)</td></tr>
+          <tr><td><code>safeApiCall</code> + <code>ApiErrorParser</code></td><td><code>:core:network</code></td><td>متمرکز (مدیریت <code>isSuccessful</code>/<code>errorBody</code> و نگاشت به <code>Result&lt;AppError&gt;</code>)</td></tr>
           <tr><td><code>Room Database</code></td><td><code>:core:database</code></td><td>یک Singleton</td></tr>
           <tr><td>Migration registry</td><td><code>:core:database</code></td><td>متمرکز</td></tr>
           <tr><td><code>Encrypted DataStore</code></td><td><code>:core:datastore</code></td><td>یک Singleton</td></tr>
           <tr><td><code>TokenStorage</code></td><td><code>:core:datastore</code></td><td>یک Singleton</td></tr>
-          <tr><td>آنالیتیک محصول (اسکرین/رویداد)</td><td><code>:core:analytics</code> → <strong>Metrix</strong> (§۱۳)</td><td>متمرکز؛ featureها فقط واسط نازک</td></tr>
-          <tr><td>گزارش فنی: کرش خودکار + غیرکشندهٔ کنترل‌شده</td><td><strong>Sentry</strong> (§۱۳) — معمولاً init در <code>:app</code></td><td>متن تشخیصی جدا از <code>displayMessage</code>؛ رویداد محصول در Sentry نه</td></tr>
+          <tr><td>Analytics, Logging, Crashlytics</td><td><code>:core:analytics</code></td><td>متمرکز</td></tr>
         </tbody>
       </table>
       </div>
@@ -641,8 +640,8 @@ flowchart LR
         <li>بررسی متمرکز <code>Response.isSuccessful</code>، <code>code()</code>، <code>body()</code> و <code>errorBody()</code>.</li>
         <li>تبدیل خودکار <code>Response&lt;T&gt;</code> و Exceptionها به <code>Result&lt;T, AppError&gt;</code>.</li>
         <li>جلوگیری از تکرار <code>try/catch</code> در Repositoryها.</li>
-        <li>ارسال کنترل‌شدهٔ <strong>Sentry غیر کشنده</strong> برای دستهٔ <strong>فنی</strong> بحرانی (§۱۳)؛ شمارش/فانل محصول فقط از <strong>Metrix</strong>.</li>
-        <li>آماده برای Retry/Backoff و تله‌متری محصول از <strong>Metrix</strong> (و در صورت نیاز متریک فنی از Sentry) بدون تغییر در Repositoryها.</li>
+        <li>ارسال خودکار Crashlytics non-fatal برای خطاهای بحرانی.</li>
+        <li>آماده برای افزودن Retry/Backoff/Telemetry بدون تغییر در Repositoryها.</li>
       </ul>
 
       <h3>۷.۲ محل قرارگیری</h3>
@@ -678,8 +677,8 @@ flowchart TD
     Validation --> Done
     EmptyPath --> Done
 
-    ErrResult -.->|"non-fatal فنی"| Obs[Sentry طبق §۱۳]
-    UnknownPath -.->|"non-fatal فنی"| Obs
+    ErrResult -.->|"non-fatal"| Crash[Crashlytics]
+    UnknownPath -.->|"non-fatal"| Crash
 </pre>
       </div>
 
@@ -714,7 +713,7 @@ flowchart TD
           <tr><td><strong>Serialization exceptions</strong></td><td><code>kotlinx.serialization.SerializationException</code> → <code>AppError.Validation</code></td></tr>
           <tr><td><strong>Cancellation</strong></td><td>بازپرتاب <code>CancellationException</code> (هرگز catch نشود)</td></tr>
           <tr><td><strong>Logging</strong></td><td><code>Log.e(tag, ...)</code> فقط در DEBUG، با sanitization (هرگز Token در لاگ)</td></tr>
-          <tr><td><strong>Sentry غیر کشنده</strong></td><td>فقط <strong>فنی</strong>؛ دستهٔ بحرانی؛ بار تشخیصی جدا از <code>displayMessage</code>؛ رویداد محصول → <strong>Metrix</strong> (§۱۳)</td></tr>
+          <tr><td><strong>Crashlytics non-fatal</strong></td><td>برای <code>AppError.Unknown</code> و <code>AppError.Network(5xx)</code></td></tr>
           <tr><td><strong>Tagging</strong></td><td>پارامتر اختیاری <code>tag</code> برای Trace و Log</td></tr>
         </tbody>
       </table>
@@ -739,7 +738,7 @@ flowchart TD
       <p>در <code>:core:network</code>:</p>
       <ul>
         <li><code>Response&lt;T&gt;.parseErrorOrNull(json: Json): ProblemDetailsDto?</code> — کمک به <code>safeApiCall</code>.</li>
-        <li><code>Result&lt;T&gt;.onErrorReport()</code> (یا معادل) — فقط مسیر <strong>فنی</strong> کنترل‌شده به <strong>Sentry</strong> (§۱۳)، نه آنالیتیک محصول.</li>
+        <li><code>Result&lt;T&gt;.onErrorReport()</code> — Crashlytics non-fatal خودکار.</li>
         <li><code>Result&lt;T&gt;.mapData(transform: (T) -&gt; R): Result&lt;R&gt;</code> — برای نگاشت Dto → DomainModel.</li>
       </ul>
 
@@ -770,7 +769,7 @@ flowchart LR
       <ul>
         <li>صفر تکرار <code>try/catch</code> در Repositoryها.</li>
         <li>یک نقطه برای تغییر سیاست خطا (تغییر در یک فایل = اعمال در کل پروژه).</li>
-        <li>Sentry غیر کشندهٔ فنی (کنترل‌شده) → دید بیشتر روی خطاهای production بدون کرش، بدون قاطی شدن با Metrix.</li>
+        <li>Crashlytics non-fatal خودکار → دیدن خطاهای واقعی production بدون کد اضافه.</li>
         <li>پایه‌ی Retry/Backoff قابل افزودن در همان <code>safeApiCall</code> بدون لمس Repositoryها.</li>
         <li>تست‌پذیری بالا — رفتار خطا در یک جا تست می‌شود.</li>
         <li>ساختار یکنواخت پیام‌های خطا برای کل اپ.</li>
@@ -781,7 +780,7 @@ flowchart LR
         <li><strong>Retry با Exponential Backoff</strong> برای کدهای 502/503/504.</li>
         <li><strong>Circuit Breaker</strong> برای endpoint های بحرانی.</li>
         <li><strong>Idempotency Key</strong> برای POSTهای حساس (Auth, Payment).</li>
-        <li><strong>Telemetry</strong>: رویدادهای محصول از <strong>Metrix</strong>؛ خطا/کرش فنی از <strong>Sentry</strong> (§۱۳) — بدون Firebase Performance مگر تصمیم جدا از این پلن.</li>
+        <li><strong>Telemetry</strong>: زمان پاسخ + status code → Firebase Performance Trace.</li>
         <li><strong>Rate-limit aware</strong>: احترام به <code>Retry-After</code> در 429.</li>
         <li><strong>Offline detection</strong>: قبل از فراخوانی، بررسی <code>ConnectivityManager</code>.</li>
       </ul>
@@ -1083,25 +1082,19 @@ flowchart LR
     <!-- §13 -->
     <section id="sec-13">
       <h2>۱۳. Observability Stack</h2>
-      <p><strong>مرجع یکپارچهٔ ارجاعات «§۱۳» در سند markdown.</strong> سه کانال مجزا با نقش ثابت؛ <strong>بدون</strong> Firebase Analytics، Crashlytics یا Performance.</p>
-      <p><strong>سیاست‌های کلی</strong></p>
-      <ul>
-        <li><strong>تفکیک نقش:</strong> Push فقط FCM؛ آنالیتیک محصول فقط Metrix؛ سلامت فنی (کرش + خطای قابل گزارش) فقط Sentry.</li>
-        <li><strong>FCM برای آنالیتیک ممنوع</strong> — رویداد محصول فقط مسیر Metrix (واسط <code>:core:analytics</code>).</li>
-        <li><strong>بدون دوباره‌کاری کرش:</strong> منبع کرش Sentry؛ Metrix جایگزین crash reporting نیست.</li>
-        <li><strong>API نازک:</strong> <code>:core:analytics</code> چند متد عمومی؛ Sentry معمولاً در <code>:app</code> یک‌بار init + user/tags؛ featureها Direct SDK برای Metrix/Sentry نمی‌گیرند.</li>
-      </ul>
       <div class="table-wrap">
       <table>
-        <thead><tr><th>ابزار</th><th>نقش</th></tr></thead>
+        <thead><tr><th>ابزار</th><th>کار</th></tr></thead>
         <tbody>
-          <tr><td><strong>FCM</strong></td><td>فقط تحویل و هندل <strong>نوتیفیکیشن</strong> (نمایش، کانال، deep link طبق قرارداد).</td></tr>
-          <tr><td><strong>Sentry</strong></td><td><strong>کرشهای غیرقابل بازیابی</strong> (خودکار) + <strong>خطاهای فنی غیرکشندهٔ کنترل‌شده</strong> (مثلاً در <code>safeApiCall</code>)؛ <strong>نه</strong> آنالیتیک/فانل محصول.</td></tr>
-          <tr><td><strong>Metrix</strong></td><td><strong>آنالیتیک و رویدادهای محصول</strong>؛ <strong>نه</strong> جایگزین crash reporting.</td></tr>
+          <tr><td>Firebase Crashlytics</td><td>Fatal crashes</td></tr>
+          <tr><td>Firebase Performance</td><td>Trace های کلیدی + ANR</td></tr>
+          <tr><td>Custom non-fatals</td><td>همه‌ی <code>AppError</code> به‌صورت <code>recordException</code> گزارش شوند</td></tr>
+          <tr><td>Firebase Analytics</td><td>Screen tracking + Business events</td></tr>
+          <tr><td>Macrobenchmark</td><td>Cold/Warm start + Frame timing</td></tr>
+          <tr><td>ANR Watchdog</td><td>هشدار &gt; ۵s</td></tr>
         </tbody>
       </table>
       </div>
-      <p>ردیابی performance اپ (مثلاً Baseline Profile، Macrobenchmark) مطابق <strong>§۱۲ Performance Stack</strong> است؛ جدا از این سه کانال Observability.</p>
       <p><strong>SLOهای پیشنهادی:</strong></p>
       <ul>
         <li>Crash-free users ≥ ۹۹.۵٪</li>
@@ -1375,7 +1368,7 @@ gantt
     <section id="sec-21">
       <h2>۲۱. خلاصه‌ی یک‌خطی</h2>
       <blockquote>
-        <p><strong>Vertical Slice Clean</strong> + <strong>UDF MVVM با تک UiState</strong> + <strong><code>:core:designsystem</code> واحد (رنگ/strings/drawable + کامپوز مشترک؛ بدون <code>:core:ui</code>)؛ فیچر بدون <code>res</code></strong> + دو flavor در <strong><code>:app</code></strong> + Core متمرکز برای Network/DB/DataStore + <strong><code>safeApiCall</code></strong> گلوگاه خطا + مرز <code>internal</code> و <strong>Konsist</strong> + Room پایلوت <code>:feature:calls</code> + <strong>Observability سه‌کاناله (§۱۳: FCM / Metrix / Sentry)</strong> و Feature Flag → معماری کم‌ریسک، آمادهٔ مقیاس میلیون کاربر و چند تیم.</p>
+        <p><strong>Vertical Slice Clean</strong> + <strong>UDF MVVM با تک UiState</strong> + <strong><code>:core:designsystem</code> واحد (رنگ/strings/drawable + کامپوز مشترک؛ بدون <code>:core:ui</code>)؛ فیچر بدون <code>res</code></strong> + دو flavor در <strong><code>:app</code></strong> + Core متمرکز برای Network/DB/DataStore + <strong><code>safeApiCall</code></strong> گلوگاه خطا + مرز <code>internal</code> و <strong>Konsist</strong> + Room پایلوت <code>:feature:calls</code> + Observability و Feature Flag → معماری کم‌ریسک، آمادهٔ مقیاس میلیون کاربر و چند تیم.</p>
       </blockquote>
     </section>
 
